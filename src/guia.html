@@ -1,0 +1,2601 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Sintaxis única de los archivos .BAT</title>
+<style>
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', 'Segoe UI Variable', Arial, sans-serif;
+    font-size: 9pt;
+    color: #1e293b;
+    line-height: 1.42;
+  }
+  h1, h2, h3, p, ul, li { margin: 0; padding: 0; }
+  ul { list-style: none; }
+
+  /* ---------- PORTADA ---------- */
+  .portada {
+    position: relative;
+    height: 259mm;
+    border-radius: 10mm;
+    background: linear-gradient(150deg, #0b1220 0%, #12203c 55%, #0d2b3f 100%);
+    color: #e2e8f0;
+    padding: 22mm 18mm;
+    overflow: hidden;
+    break-after: page;
+  }
+  .portada::before {
+    content: '';
+    position: absolute;
+    top: -40mm; right: -35mm;
+    width: 130mm; height: 130mm;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56,189,248,0.35), rgba(56,189,248,0) 70%);
+  }
+  .portada::after {
+    content: '';
+    position: absolute;
+    bottom: -55mm; left: -30mm;
+    width: 120mm; height: 120mm;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16,185,129,0.28), rgba(16,185,129,0) 70%);
+  }
+  .p-marca {
+    display: inline-block;
+    font-family: Consolas, monospace;
+    font-size: 8.5pt;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #7dd3fc;
+    border: 1px solid rgba(125,211,252,0.45);
+    border-radius: 20px;
+    padding: 2.2mm 5mm;
+    margin-bottom: 14mm;
+  }
+  .p-tit {
+    font-size: 33pt;
+    line-height: 1.08;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    max-width: 150mm;
+  }
+  .p-tit em { font-style: normal; color: #38bdf8; }
+  .p-sub {
+    margin-top: 7mm;
+    font-size: 13pt;
+    color: #a9bdd6;
+    max-width: 130mm;
+    line-height: 1.35;
+  }
+  .p-linea {
+    width: 46mm; height: 2.2mm;
+    margin: 11mm 0 9mm;
+    border-radius: 3mm;
+    background: linear-gradient(90deg, #38bdf8, #34d399);
+  }
+  .p-chips { display: flex; flex-wrap: wrap; gap: 3mm; max-width: 150mm; }
+  .p-chip {
+    font-size: 8pt;
+    color: #cbd5e1;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 4mm;
+    padding: 1.8mm 4mm;
+  }
+  .p-chip b { color: #fff; }
+  .p-cats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.8mm 2.4mm;
+    max-width: 152mm;
+    margin-top: 9mm;
+  }
+  .p-cats span {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.8mm;
+    font-size: 7.6pt;
+    color: #b5c6d9;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 3mm;
+    padding: 1.1mm 2.6mm;
+  }
+  .p-cats i { width: 1.9mm; height: 1.9mm; border-radius: 50%; display: inline-block; }
+  .p-cats b { color: #e2e8f0; font-weight: 600; }
+  .p-codigo {
+    position: absolute;
+    left: 18mm; right: 18mm; bottom: 22mm;
+    background: rgba(2,10,24,0.7);
+    border: 1px solid rgba(125,211,252,0.22);
+    border-radius: 5mm;
+    padding: 6mm 7mm;
+    font-family: Consolas, monospace;
+    font-size: 8.4pt;
+    line-height: 1.75;
+    color: #9fb3c8;
+  }
+  .p-codigo .kw { color: #7dd3fc; }
+  .p-codigo .lit { color: #86efac; }
+  .p-codigo .com { color: #64748b; }
+  .p-pie {
+    position: absolute;
+    left: 18mm; bottom: 9mm;
+    font-size: 8pt;
+    color: #64748b;
+  }
+
+  /* ---------- MAPA ---------- */
+  .mapa { break-after: page; }
+  .mapa-head { border-bottom: 2.4pt solid #0f172a; padding-bottom: 4mm; margin-bottom: 7mm; }
+  .mapa-head h2 { font-size: 21pt; color: #0f172a; letter-spacing: -0.4px; }
+  .mapa-head p { font-size: 9.5pt; color: #475569; margin-top: 2mm; max-width: 150mm; }
+  .leyenda { display: flex; gap: 3mm; flex-wrap: wrap; margin: 5mm 0 8mm; }
+  .leyenda .badge { position: static; }
+  .leyenda-item { display: flex; align-items: center; gap: 2mm; font-size: 8.2pt; color: #475569; }
+  .mapa-grid { columns: 2; column-gap: 9mm; }
+  .mapa-grupo { break-inside: avoid; margin-bottom: 6mm; }
+  .mapa-parte {
+    font-size: 8.4pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--pcolor);
+    border-bottom: 1pt solid rgba(0,0,0,0.12);
+    padding-bottom: 1.5mm;
+    margin-bottom: 2.5mm;
+  }
+  .mapa-parte span {
+    display: inline-block;
+    min-width: 8mm;
+  }
+  .mapa-grupo li {
+    display: flex;
+    align-items: baseline;
+    gap: 2.2mm;
+    font-size: 8.6pt;
+    color: #334155;
+    padding: 1.1mm 0;
+  }
+  .mapa-grupo li i { width: 2.3mm; height: 2.3mm; border-radius: 50%; flex: none; transform: translateY(-0.4mm); }
+  .m-id { font-family: Consolas, monospace; font-size: 7.4pt; color: #94a3b8; min-width: 6mm; }
+  .mapa-grupo li em { margin-left: auto; font-style: normal; font-size: 7.4pt; color: #94a3b8; }
+
+  /* ---------- PARTES ---------- */
+  .parte { break-before: page; break-after: page; }
+  .parte-card {
+    border-radius: 8mm;
+    background: linear-gradient(135deg, var(--pcolor), var(--pdark));
+    color: #fff;
+    padding: 16mm 16mm 14mm;
+    min-height: 150mm;
+  }
+  .parte-eyebrow {
+    font-family: Consolas, monospace;
+    font-size: 9pt;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.72);
+  }
+  .parte-card h1 { font-size: 27pt; line-height: 1.12; margin-top: 3mm; letter-spacing: -0.5px; }
+  .parte-sub { font-size: 10.5pt; color: rgba(255,255,255,0.85); margin-top: 4mm; max-width: 135mm; line-height: 1.45; }
+  .parte-lista { margin-top: 11mm; border-top: 1px solid rgba(255,255,255,0.28); }
+  .parte-lista li {
+    display: flex;
+    align-items: center;
+    gap: 4mm;
+    padding: 2.6mm 0;
+    border-bottom: 1px solid rgba(255,255,255,0.14);
+    font-size: 10pt;
+  }
+  .pt-num { font-family: Consolas, monospace; font-size: 9pt; color: rgba(255,255,255,0.6); min-width: 8mm; }
+  .pt-tit { font-weight: 600; }
+  .pt-count {
+    margin-left: auto;
+    font-size: 8pt;
+    background: rgba(255,255,255,0.18);
+    border-radius: 3mm;
+    padding: 0.8mm 3mm;
+  }
+
+  /* ---------- SECCIONES ---------- */
+  .seccion { break-before: page; }
+  .sec-head { display: flex; align-items: flex-start; gap: 5mm; }
+  .sec-num {
+    font-family: Consolas, monospace;
+    font-size: 26pt;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 4mm;
+    padding: 3mm 4.5mm;
+  }
+  .sec-txt { flex: 1; }
+  .sec-txt h2 { font-size: 18pt; color: #0f172a; letter-spacing: -0.35px; line-height: 1.15; }
+  .sec-txt p { font-size: 9pt; color: #52627a; margin-top: 1.8mm; max-width: 140mm; }
+  .sec-count {
+    text-align: right;
+    color: var(--accent);
+    border-left: 1.6pt solid var(--accent-mid);
+    padding-left: 4mm;
+  }
+  .sec-count b { display: block; font-size: 17pt; line-height: 1; }
+  .sec-count span { font-size: 7.2pt; text-transform: uppercase; letter-spacing: 0.7px; color: #8494a8; }
+  .regla {
+    height: 1.6pt;
+    margin: 4.5mm 0 4mm;
+    background: linear-gradient(90deg, var(--accent), var(--accent-mid), transparent);
+    border-radius: 2pt;
+  }
+
+  /* ---------- TARJETAS ---------- */
+  .card {
+    break-inside: avoid;
+    border: 0.8pt solid #e2e8f0;
+    border-left: 2.6pt solid var(--accent);
+    border-radius: 2.2mm;
+    padding: 2.6mm 3.4mm 2.8mm;
+    margin-bottom: 2.4mm;
+    background: #fff;
+  }
+  .card-top { display: flex; align-items: flex-start; gap: 2.6mm; }
+  .sintaxis {
+    flex: 1;
+    font-family: Consolas, 'Cascadia Mono', monospace;
+    font-size: 8.9pt;
+    line-height: 1.34;
+    color: var(--accent-dark);
+    background: var(--accent-soft);
+    border-radius: 1.4mm;
+    padding: 1.4mm 2.2mm;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-weight: 600;
+  }
+  .badge {
+    flex: none;
+    font-size: 6.2pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--bc);
+    background: var(--bc-soft);
+    border-radius: 3mm;
+    padding: 1mm 2.2mm;
+    margin-top: 0.6mm;
+  }
+  .exp { font-size: 8.5pt; color: #334155; margin-top: 1.9mm; line-height: 1.4; }
+  .origen {
+    font-size: 7.3pt;
+    color: #8b9aad;
+    margin-top: 1.2mm;
+  }
+  .origen-lbl {
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-size: 6.2pt;
+    font-weight: 700;
+    color: #a9b6c6;
+  }
+  .aviso {
+    font-size: 7.9pt;
+    color: #9a3412;
+    background: #fff7ed;
+    border-left: 1.8pt solid #f59e0b;
+    border-radius: 1.2mm;
+    padding: 1.4mm 2.2mm;
+    margin-top: 1.7mm;
+    line-height: 1.36;
+  }
+  .aviso-ico {
+    display: inline-block;
+    width: 3.4mm; height: 3.4mm;
+    line-height: 3.4mm;
+    text-align: center;
+    border-radius: 50%;
+    background: #f59e0b;
+    color: #fff;
+    font-size: 6pt;
+    font-weight: 700;
+    margin-right: 1.2mm;
+    transform: translateY(-0.2mm);
+  }
+
+  /* ---------- TABLAS ---------- */
+  .tabla-wrap { break-inside: avoid; margin-bottom: 4mm; }
+  .tabla-tit {
+    font-size: 8.4pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--accent);
+    margin-bottom: 1.6mm;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 8.2pt; }
+  thead th {
+    text-align: left;
+    font-size: 7pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    border-bottom: 1.2pt solid var(--accent);
+    padding: 1.2mm 2mm;
+  }
+  tbody td { padding: 1.3mm 2mm; border-bottom: 0.5pt solid #e8edf3; color: #334155; vertical-align: top; }
+  tbody tr:nth-child(even) td { background: rgba(0,0,0,0.018); }
+  td.mono { font-family: Consolas, monospace; font-size: 7.9pt; color: var(--accent); white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div class="portada">
+  <div class="p-marca">Resumen de referencia · .bat</div>
+  <h1 class="p-tit">Todas las sintaxis <em>únicas</em> de un archivo .BAT</h1>
+  <p class="p-sub">Guía categorizada, comentada y con las trampas reales encontradas en los scripts del proyecto.</p>
+  <div class="p-linea"></div>
+  <div class="p-chips">
+    <span class="p-chip"><b>178</b> sintaxis explicadas</span>
+    <span class="p-chip"><b>18</b> categorías</span>
+    <span class="p-chip"><b>4</b> tablas de referencia</span>
+    <span class="p-chip"><b>26</b> archivos .bat revisados</span>
+  </div>
+  <div class="p-cats">
+    <span><i style="background:#2563eb"></i>Estructura del script</span><span><i style="background:#7c3aed"></i>Comentarios</span><span><i style="background:#0891b2"></i>Salida por pantalla — ECHO</span><span><i style="background:#059669"></i>Variables — SET</span><span><i style="background:#0d9488"></i>Entorno y expansión retardada</span><span><i style="background:#ea580c"></i>Argumentos y modificadores</span><span><i style="background:#dc2626"></i>Condicionales — IF</span><span><i style="background:#be123c"></i>Etiquetas y saltos — GOTO</span><span><i style="background:#c026d3"></i>Subrutinas — CALL</span><span><i style="background:#4f46e5"></i>Bucles — FOR</span><span><i style="background:#0284c7"></i>Redirección y tuberías</span><span><i style="background:#65a30d"></i>Archivos y carpetas</span><span><i style="background:#b45309"></i>Patrones recurrentes</span><span><i style="background:#b91c1c"></i>Errores y trampas reales</span><span><i style="background:#1e40af"></i>PowerShell desde un .bat</span><span><i style="background:#475569"></i>Comandos del sistema invocados desde el .bat</span><span><i style="background:#0369a1"></i>Red: comandos de los talleres</span><span><i style="background:#0f766e"></i>Chuletas de referencia rápida</span>
+  </div>
+  <div class="p-codigo">
+    <div><span class="com">rem --- cabecera típica de cualquier .bat del proyecto ---</span></div>
+    <div><span class="kw">@echo off</span> &amp; <span class="kw">chcp</span> 65001 &gt;nul</div>
+    <div><span class="kw">setlocal</span> enabledelayedexpansion</div>
+    <div><span class="kw">cd</span> /d <span class="lit">"%~dp0"</span></div>
+    <div><span class="kw">set</span> <span class="lit">"REP=%~dp0Reportes"</span> &amp; <span class="kw">if not exist</span> <span class="lit">"%REP%"</span> <span class="kw">mkdir</span> <span class="lit">"%REP%"</span></div>
+    <div><span class="kw">goto</span> :menu</div>
+  </div>
+  <p class="p-pie">Sistemas Operativos — Segundo corte · Noviembre de 2026</p>
+</div>
+
+<!-- MAPA -->
+<section class="mapa">
+  <div class="mapa-head">
+    <h2>Mapa de la guía</h2>
+    <p>Las categorías siguen el orden en que se necesita cada concepto al escribir un script: primero la estructura, después el control de flujo, luego el procesamiento de datos y al final las recetas y los errores que conviene evitar. Los apéndices reúnen lo que no es sintaxis propia de batch pero se escribe dentro de los .bat.</p>
+  </div>
+  <div class="leyenda">
+    <span class="leyenda-item"><span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span> uso cotidiano</span>
+    <span class="leyenda-item"><span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span> requiere contexto</span>
+    <span class="leyenda-item"><span class="badge" style="--bc:#b91c1c;--bc-soft:rgba(185,28,28,0.12)">peligro</span> irreversible o sensible</span>
+    <span class="leyenda-item"><span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span> error frecuente</span>
+  </div>
+  <div class="mapa-grid">
+    
+    <div class="mapa-grupo" style="--pcolor:#2563eb">
+      <p class="mapa-parte"><span>I</span> Fundamentos del script</p>
+      <ul>
+        <li><i style="background:#2563eb"></i><span class="m-id">01</span>Estructura del script<em>12</em></li><li><i style="background:#7c3aed"></i><span class="m-id">02</span>Comentarios<em>3</em></li><li><i style="background:#0891b2"></i><span class="m-id">03</span>Salida por pantalla — ECHO<em>6</em></li><li><i style="background:#059669"></i><span class="m-id">04</span>Variables — SET<em>13</em></li><li><i style="background:#0d9488"></i><span class="m-id">05</span>Entorno y expansión retardada<em>9</em></li>
+      </ul>
+    </div>
+    <div class="mapa-grupo" style="--pcolor:#ea580c">
+      <p class="mapa-parte"><span>II</span> Argumentos y control de flujo</p>
+      <ul>
+        <li><i style="background:#ea580c"></i><span class="m-id">06</span>Argumentos y modificadores<em>9</em></li><li><i style="background:#dc2626"></i><span class="m-id">07</span>Condicionales — IF<em>10</em></li><li><i style="background:#be123c"></i><span class="m-id">08</span>Etiquetas y saltos — GOTO<em>6</em></li><li><i style="background:#c026d3"></i><span class="m-id">09</span>Subrutinas — CALL<em>8</em></li>
+      </ul>
+    </div>
+    <div class="mapa-grupo" style="--pcolor:#4f46e5">
+      <p class="mapa-parte"><span>III</span> Bucles, salida y archivos</p>
+      <ul>
+        <li><i style="background:#4f46e5"></i><span class="m-id">10</span>Bucles — FOR<em>12</em></li><li><i style="background:#0284c7"></i><span class="m-id">11</span>Redirección y tuberías<em>11</em></li><li><i style="background:#65a30d"></i><span class="m-id">12</span>Archivos y carpetas<em>8</em></li>
+      </ul>
+    </div>
+    <div class="mapa-grupo" style="--pcolor:#b45309">
+      <p class="mapa-parte"><span>IV</span> Recetas y trampas reales</p>
+      <ul>
+        <li><i style="background:#b45309"></i><span class="m-id">13</span>Patrones recurrentes<em>13</em></li><li><i style="background:#b91c1c"></i><span class="m-id">14</span>Errores y trampas reales<em>13</em></li>
+      </ul>
+    </div>
+    <div class="mapa-grupo" style="--pcolor:#0f766e">
+      <p class="mapa-parte"><span>AP</span> Apéndices</p>
+      <ul>
+        <li><i style="background:#1e40af"></i><span class="m-id">A</span>PowerShell desde un .bat<em>7</em></li><li><i style="background:#475569"></i><span class="m-id">B</span>Comandos del sistema invocados desde el .bat<em>26</em></li><li><i style="background:#0369a1"></i><span class="m-id">C</span>Red: comandos de los talleres<em>12</em></li><li><i style="background:#0f766e"></i><span class="m-id">D</span>Chuletas de referencia rápida<em>4</em></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+
+  <section class="parte" style="--pcolor:#2563eb;--psoft:rgba(37,99,235,0.14);--pdark:rgb(29,75,174)">
+    <div class="parte-card">
+      <p class="parte-eyebrow">Parte I</p>
+      <h1>Fundamentos del script</h1>
+      <p class="parte-sub">Lo que todo .bat necesita para arrancar bien: eco, codificación, variables, expansión y subcadenas.</p>
+      <ul class="parte-lista">
+        <li><span class="pt-num">01</span><span class="pt-tit">Estructura del script</span><span class="pt-count">12</span></li><li><span class="pt-num">02</span><span class="pt-tit">Comentarios</span><span class="pt-count">3</span></li><li><span class="pt-num">03</span><span class="pt-tit">Salida por pantalla — ECHO</span><span class="pt-count">6</span></li><li><span class="pt-num">04</span><span class="pt-tit">Variables — SET</span><span class="pt-count">13</span></li><li><span class="pt-num">05</span><span class="pt-tit">Entorno y expansión retardada</span><span class="pt-count">9</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <article class="seccion" style="--accent:#2563eb;--accent-soft:rgba(37,99,235,0.1);--accent-mid:rgba(37,99,235,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">01</div>
+      <div class="sec-txt">
+        <h2>Estructura del script</h2>
+        <p>Las instrucciones de cabecera y de cierre. Definen qué se ve en pantalla, en qué codificación se interpreta el texto y cómo termina el script sin dejar la ventana colgada.</p>
+      </div>
+      <div class="sec-count"><b>12</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#2563eb;--accent-soft:rgba(37,99,235,0.09);--accent-mid:rgba(37,99,235,0.35);--accent-dark:rgb(31,79,184)">
+      <div class="card-top">
+        <code class="sintaxis">@echo off</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Apaga el eco: la consola deja de imprimir cada línea del script y solo muestra lo que imprimes con echo. La @ evita que esa misma línea se muestre. Va siempre en la primera línea útil.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> los 26 .bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#2563eb;--accent-soft:rgba(37,99,235,0.09);--accent-mid:rgba(37,99,235,0.35);--accent-dark:rgb(31,79,184)">
+      <div class="card-top">
+        <code class="sintaxis">chcp 65001 &gt;nul</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Cambia la página de códigos de la consola a UTF-8 para que las tildes y la ñ se vean bien en lugar de «Â¡» o «Ã©». El &gt;nul oculta el mensaje «Código de página activo: 65001».</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> angela.bat, CRISTIAN.bat, ROYNER.bat</p>
+      <p class="aviso"><span class="aviso-ico">!</span> No basta con escribirlo: guarda el archivo en UTF-8. Programas.bat muestra «Â¡Escaneo» porque su texto y su codificación no coinciden.</p>
+    </div>
+
+    <div class="card" style="--accent:#2563eb;--accent-soft:rgba(37,99,235,0.09);--accent-mid:rgba(37,99,235,0.35);--accent-dark:rgb(31,79,184)">
+      <div class="card-top">
+        <code class="sintaxis">title Centro de Utilidades</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Cambia el título de la ventana de consola. Es cosmético, pero ayuda a identificar el script cuando hay varias ventanas abiertas.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CAMILO.bat, JORGE.bat, EDWIN2.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#2563eb;--accent-soft:rgba(37,99,235,0.09);--accent-mid:rgba(37,99,235,0.35);--accent-dark:rgb(31,79,184)">
+      <div class="card-top">
+        <code class="sintaxis">color 0A</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Cambia los colores de la consola: el primer dígito es el fondo y el segundo el texto, en hexadecimal (0 negro, 1 azul, A verde claro, F blanco). 0A = fondo negro con texto verde tipo Matrix; 1F = fondo azul y texto blanco. Sin argumentos, color restablece el esquema por defecto.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CAMILO.bat (0A), DANIEL.bat (1F)</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#2563eb;--accent-soft:rgba(37,99,235,0.09);--accent-mid:rgba(37,99,235,0.35);--accent-dark:rgb(31,79,184)">
+      <div class="card-top">
+        <code class="sintaxis">cls</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Borra la pantalla. Se usa al abrir cada pantalla del menú para que no se acumulen las opciones anteriores.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JAIRO.bat, JORGE.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#2563eb;--accent-soft:rgba(37,99,235,0.09);--accent-mid:rgba(37,99,235,0.35);--accent-dark:rgb(31,79,184)">
+      <div class="card-top">
+        <code class="sintaxis">pause</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Muestra «Presione una tecla para continuar...» y espera a que el usuario pulse algo. Sirve para que la ventana no se cierre antes de que se lea el resultado.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> casi todos</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#2563eb;--accent-soft:rgba(37,99,235,0.09);--accent-mid:rgba(37,99,235,0.35);--accent-dark:rgb(31,79,184)">
+      <div class="card-top">
+        <code class="sintaxis">pause &gt;nul</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Igual que pause pero sin el mensaje, porque la salida se manda al dispositivo nul, la «papelera» del sistema.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CRISTIAN.bat, JULIAN.bat</p>
+      <p class="aviso"><span class="aviso-ico">!</span> El dispositivo correcto es nul, nunca null: pause &gt; null crea un archivo llamado «null» en la carpeta y no silencia nada.</p>
+    </div>
+
+    <div class="card" style="--accent:#2563eb;--accent-soft:rgba(37,99,235,0.09);--accent-mid:rgba(37,99,235,0.35);--accent-dark:rgb(31,79,184)">
+      <div class="card-top">
+        <code class="sintaxis">timeout /t 3 &gt;nul</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Espera 3 segundos sin cuenta regresiva y sin pedir tecla. Con /nobreak la espera no se puede cancelar pulsando una tecla. Es la pausa correcta, mejor que el truco ping 127.0.0.1 -n 4 &gt;nul.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> angela.bat, JORGE.bat, ROYNER.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#2563eb;--accent-soft:rgba(37,99,235,0.09);--accent-mid:rgba(37,99,235,0.35);--accent-dark:rgb(31,79,184)">
+      <div class="card-top">
+        <code class="sintaxis">@pause   ·   @echo off</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">La @ antepuesta a cualquier comando impide que ese comando se imprima aunque el eco esté activo. Es costumbre de los scripts antiguos.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#2563eb;--accent-soft:rgba(37,99,235,0.09);--accent-mid:rgba(37,99,235,0.35);--accent-dark:rgb(31,79,184)">
+      <div class="card-top">
+        <code class="sintaxis">exit</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Cierra la ventana de consola y termina el proceso. Es lo adecuado en scripts que se lanzan con doble clic.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> varios</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#2563eb;--accent-soft:rgba(37,99,235,0.09);--accent-mid:rgba(37,99,235,0.35);--accent-dark:rgb(31,79,184)">
+      <div class="card-top">
+        <code class="sintaxis">exit /b</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Termina el script o la subrutina pero SIN cerrar la ventana: devuelve el control a quien lo llamó. Es lo correcto en menús y en subrutinas invocadas con call.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CRISTIAN.bat, JAIRO.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#2563eb;--accent-soft:rgba(37,99,235,0.09);--accent-mid:rgba(37,99,235,0.35);--accent-dark:rgb(31,79,184)">
+      <div class="card-top">
+        <code class="sintaxis">exit /b 0   ·   exit /b 1</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Igual que exit /b, pero además devuelve un código de resultado explícito (0 = éxito, 1 = fallo). El llamador lo consulta con if errorlevel.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JULIAN.bat (:Confirmar)</p>
+      
+    </div>
+    
+  </article>
+
+  <article class="seccion" style="--accent:#7c3aed;--accent-soft:rgba(124,58,237,0.1);--accent-mid:rgba(124,58,237,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">02</div>
+      <div class="sec-txt">
+        <h2>Comentarios</h2>
+        <p>Tres formas de escribir texto que el intérprete ignora. No son intercambiables: una falla dentro de bloques y detrás de tuberías.</p>
+      </div>
+      <div class="sec-count"><b>3</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#7c3aed;--accent-soft:rgba(124,58,237,0.09);--accent-mid:rgba(124,58,237,0.35);--accent-dark:rgb(96,48,186)">
+      <div class="card-top">
+        <code class="sintaxis">rem esto es un comentario</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">REM = REMark: el resto de la línea se ignora por completo. Es el comentario seguro porque funciona en cualquier posición, incluso dentro de bloques ( ) y detrás de tuberías.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat, JEINER.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#7c3aed;--accent-soft:rgba(124,58,237,0.09);--accent-mid:rgba(124,58,237,0.35);--accent-dark:rgb(96,48,186)">
+      <div class="card-top">
+        <code class="sintaxis">@rem comentario</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Igual que rem, pero la propia línea del comentario tampoco se muestra si el eco estuviera activo.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#7c3aed;--accent-soft:rgba(124,58,237,0.09);--accent-mid:rgba(124,58,237,0.35);--accent-dark:rgb(96,48,186)">
+      <div class="card-top">
+        <code class="sintaxis">:: comentario</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Truco habitual: crea una etiqueta vacía y el segundo «:» la deja inalcanzable, así que el intérprete la ignora. Más rápido de escribir que rem.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EDWIN.bat, JORGE.bat, broma.bat</p>
+      <p class="aviso"><span class="aviso-ico">!</span> No funciona dentro de bloques ( ... ) ni detrás de un pipe: ahí rompe el script. En esos casos usa rem.</p>
+    </div>
+    
+  </article>
+
+  <article class="seccion" style="--accent:#0891b2;--accent-soft:rgba(8,145,178,0.1);--accent-mid:rgba(8,145,178,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">03</div>
+      <div class="sec-txt">
+        <h2>Salida por pantalla — ECHO</h2>
+        <p>echo escribe texto y expande variables. Sus variantes controlan líneas en blanco, porcentajes y caracteres que el intérprete interpretaría como sintaxis.</p>
+      </div>
+      <div class="sec-count"><b>6</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#0891b2;--accent-soft:rgba(8,145,178,0.09);--accent-mid:rgba(8,145,178,0.35);--accent-dark:rgb(9,113,142)">
+      <div class="card-top">
+        <code class="sintaxis">echo Hola usuario %USERNAME%</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Imprime el texto tal cual, expandiendo antes las variables entre porcentajes: %USERNAME% se sustituye por el usuario de Windows.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JAIRO.bat, EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0891b2;--accent-soft:rgba(8,145,178,0.09);--accent-mid:rgba(8,145,178,0.35);--accent-dark:rgb(9,113,142)">
+      <div class="card-top">
+        <code class="sintaxis">echo.</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Imprime una línea en blanco; el punto forma parte del comando. Se usa para dar aire entre las secciones de un menú.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, JULIAN.bat, ROYNER.bat</p>
+      <p class="aviso"><span class="aviso-ico">!</span> echo sin nada imprime el estado del eco (on/off); echo. siempre imprime una línea vacía.</p>
+    </div>
+
+    <div class="card" style="--accent:#0891b2;--accent-soft:rgba(8,145,178,0.09);--accent-mid:rgba(8,145,178,0.35);--accent-dark:rgb(9,113,142)">
+      <div class="card-top">
+        <code class="sintaxis">echo Uso de CPU: !CPUL!%%</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">El signo de porcentaje literal se escribe %%; un % solo intenta abrir una variable y rompe la línea.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> WinSysToolkit-ELKIN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0891b2;--accent-soft:rgba(8,145,178,0.09);--accent-mid:rgba(8,145,178,0.35);--accent-dark:rgb(9,113,142)">
+      <div class="card-top">
+        <code class="sintaxis">echo IP_LOCAL        ^| IP_REMOTA</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">El circunflejo ^ escapa el carácter siguiente: aquí una barra vertical que NO debe funcionar como tubería. Lo mismo aplica a ^( y ^) para paréntesis literales.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, JAIRO.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0891b2;--accent-soft:rgba(8,145,178,0.09);--accent-mid:rgba(8,145,178,0.35);--accent-dark:rgb(9,113,142)">
+      <div class="card-top">
+        <code class="sintaxis">echo hola  -^&gt;  listo</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">El ^ también escapa la flecha -&gt; para que no se confunda con una redirección.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JAIRO.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0891b2;--accent-soft:rgba(8,145,178,0.09);--accent-mid:rgba(8,145,178,0.35);--accent-dark:rgb(9,113,142)">
+      <div class="card-top">
+        <code class="sintaxis">echo ESTE TEXTO &gt;&gt; hola1.txt</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">echo es la vía normal para escribir o añadir líneas a un archivo, combinado con &gt; o &gt;&gt;. El taller lo usa como forma de «adicionar contenido».</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> IRAIDA.bat, EDWIN2.bat</p>
+      
+    </div>
+    
+  </article>
+
+  <article class="seccion" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.1);--accent-mid:rgba(5,150,105,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">04</div>
+      <div class="sec-txt">
+        <h2>Variables — SET</h2>
+        <p>set crea, lee, borra y calcula variables. Aquí está también la lectura del teclado y la sustitución de texto, que es la base de casi todos los menús.</p>
+      </div>
+      <div class="sec-count"><b>13</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.09);--accent-mid:rgba(5,150,105,0.35);--accent-dark:rgb(7,117,87)">
+      <div class="card-top">
+        <code class="sintaxis">set nombre=Juan</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Crea la variable nombre con el valor Juan. No debe haber espacios alrededor del signo igual.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> varios</p>
+      <p class="aviso"><span class="aviso-ico">!</span> set nombre = Juan crea una variable llamada «nombre » (con espacio final) y con valor « Juan»; luego %nombre% no existe. ERIKA.bat tiene exactamente ese bug.</p>
+    </div>
+
+    <div class="card" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.09);--accent-mid:rgba(5,150,105,0.35);--accent-dark:rgb(7,117,87)">
+      <div class="card-top">
+        <code class="sintaxis">set "reporte=%~dp0Reporte.txt"</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Forma recomendada: entrecomillar toda la asignación permite valores con espacios y caracteres especiales, sin cortes en el primer espacio ni espacios parásitos.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CRISTIAN.bat, DANIEL.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.09);--accent-mid:rgba(5,150,105,0.35);--accent-dark:rgb(7,117,87)">
+      <div class="card-top">
+        <code class="sintaxis">set PASS=admin123</code>
+        <span class="badge" style="--bc:#b91c1c;--bc-soft:rgba(185,28,28,0.12)">peligro</span>
+      </div>
+      <p class="exp">Variable con una clave fija que después se compara en un if para simular un inicio de sesión.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> IRAIDA.bat</p>
+      <p class="aviso"><span class="aviso-ico">!</span> No es protección real: cualquiera que abra el .bat en un editor ve la clave. En batch todo es texto plano.</p>
+    </div>
+
+    <div class="card" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.09);--accent-mid:rgba(5,150,105,0.35);--accent-dark:rgb(7,117,87)">
+      <div class="card-top">
+        <code class="sintaxis">set /p opcion=Seleccione una opcion:</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Lee lo que teclea el usuario y lo guarda en opcion, mostrando el prompt sin salto de línea. Es el corazón de todos los menús del proyecto.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CAMILO.bat, JORGE.bat, YORMAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.09);--accent-mid:rgba(5,150,105,0.35);--accent-dark:rgb(7,117,87)">
+      <div class="card-top">
+        <code class="sintaxis">set /p "op=Elige una opcion: "</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Variante segura: entrecomillar el prompt completo evita que espacios accidentales contaminen la variable.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> broma.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.09);--accent-mid:rgba(5,150,105,0.35);--accent-dark:rgb(7,117,87)">
+      <div class="card-top">
+        <code class="sintaxis">set /p OLDWP=&lt;"estado\fondo_original.txt"</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Lee la PRIMERA LÍNEA de un archivo y la guarda en la variable, en lugar de leer del teclado: el &lt; es «entrada desde archivo».</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> counter.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.09);--accent-mid:rgba(5,150,105,0.35);--accent-dark:rgb(7,117,87)">
+      <div class="card-top">
+        <code class="sintaxis">set /a contador=contador+1</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">El modificador /a convierte set en calculadora: evalúa la parte derecha como expresión aritmética y permite nombrar la variable sin %...% dentro de su propia fórmula. Es el contador típico de los bucles for.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat, DANIEL.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.09);--accent-mid:rgba(5,150,105,0.35);--accent-dark:rgb(7,117,87)">
+      <div class="card-top">
+        <code class="sintaxis">set /a media=(%num1% + %num2%) / 2</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Con /a se dispone de paréntesis, + - * / y % (módulo), operadores de bits (&amp; | ^ &lt;&lt; &gt;&gt; ~) y las asignaciones += -= *= /=.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.09);--accent-mid:rgba(5,150,105,0.35);--accent-dark:rgb(7,117,87)">
+      <div class="card-top">
+        <code class="sintaxis">set /a "x = x + 1"</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Las comillas alrededor de la expresión son opcionales: /a las ignora.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      <p class="aviso"><span class="aviso-ico">!</span> Dentro de un bloque ( ) o de un for, la variable no se vuelve a leer con %x% hasta la línea siguiente del bloque: para eso existe la expansión retardada.</p>
+    </div>
+
+    <div class="card" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.09);--accent-mid:rgba(5,150,105,0.35);--accent-dark:rgb(7,117,87)">
+      <div class="card-top">
+        <code class="sintaxis">set</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Sin argumentos imprime TODAS las variables del entorno activo. Útil para depurar.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat: set &gt; variables.txt</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.09);--accent-mid:rgba(5,150,105,0.35);--accent-dark:rgb(7,117,87)">
+      <div class="card-top">
+        <code class="sintaxis">set raiz</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Con solo un nombre o prefijo, set imprime las variables que empiezan por ese texto.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> —</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.09);--accent-mid:rgba(5,150,105,0.35);--accent-dark:rgb(7,117,87)">
+      <div class="card-top">
+        <code class="sintaxis">set "raiz="</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Asignar un valor vacío BORRA la variable. Se hace antes de un set /p para no arrastrar la respuesta anterior si el usuario pulsa Enter sin escribir.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CRISTIAN.bat, JAIRO.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#059669;--accent-soft:rgba(5,150,105,0.09);--accent-mid:rgba(5,150,105,0.35);--accent-dark:rgb(7,117,87)">
+      <div class="card-top">
+        <code class="sintaxis">set "raiz=%raiz:"=%"</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Sustitución de texto dentro de una variable con la forma %var:busca=reemplaza%. Aquí busca todas las comillas y las reemplaza por nada, para quitar las que Windows añade al arrastrar una carpeta sobre la ventana.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JAIRO.bat</p>
+      
+    </div>
+    
+  </article>
+
+  <article class="seccion" style="--accent:#0d9488;--accent-soft:rgba(13,148,136,0.1);--accent-mid:rgba(13,148,136,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">05</div>
+      <div class="sec-txt">
+        <h2>Entorno y expansión retardada</h2>
+        <p>Las variables que Windows ya trae, el problema de leer variables dentro de un bloque y las dos formas de resolverlo: setlocal enabledelayedexpansion y if errorlevel.</p>
+      </div>
+      <div class="sec-count"><b>9</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#0d9488;--accent-soft:rgba(13,148,136,0.09);--accent-mid:rgba(13,148,136,0.35);--accent-dark:rgb(13,116,110)">
+      <div class="card-top">
+        <code class="sintaxis">echo %USERNAME% %COMPUTERNAME% %DATE% %TIME%</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Variables predefinidas por Windows: usuario, nombre del equipo, fecha y hora actuales.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JAIRO.bat, EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0d9488;--accent-soft:rgba(13,148,136,0.09);--accent-mid:rgba(13,148,136,0.35);--accent-dark:rgb(13,116,110)">
+      <div class="card-top">
+        <code class="sintaxis">%CD%  %HOMEPATH%  %TEMP%  %USERPROFILE%</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Carpeta actual, ruta del perfil, carpeta temporal y perfil completo. Otras muy usadas: %SYSTEMROOT%, %ALLUSERSPROFILE%, %NUMBER_OF_PROCESSORS% y %PROCESSOR_ARCHITECTURE%.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat, EDWIN2.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0d9488;--accent-soft:rgba(13,148,136,0.09);--accent-mid:rgba(13,148,136,0.35);--accent-dark:rgb(13,116,110)">
+      <div class="card-top">
+        <code class="sintaxis">%RANDOM%</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Número aleatorio entre 0 y 32767; se usa para nombres únicos y ejercicios de azar.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat, taller</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0d9488;--accent-soft:rgba(13,148,136,0.09);--accent-mid:rgba(13,148,136,0.35);--accent-dark:rgb(13,116,110)">
+      <div class="card-top">
+        <code class="sintaxis">setlocal enabledelayedexpansion</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Activa la expansión retardada: desde aquí las variables se pueden leer con !var! y reflejan los cambios hechos dentro del mismo bloque o del for. Casi todos los scripts serios lo abren y lo cierran con endlocal.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> broma.bat, DANIEL.bat, JAIRO.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0d9488;--accent-soft:rgba(13,148,136,0.09);--accent-mid:rgba(13,148,136,0.35);--accent-dark:rgb(13,116,110)">
+      <div class="card-top">
+        <code class="sintaxis">echo !BAR!</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Lectura con expansión retardada: !var! devuelve el valor ACTUAL. Con %var% se obtendría el valor que la variable tenía al entrar al bloque.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EDWIN2.bat (barra de carga)</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0d9488;--accent-soft:rgba(13,148,136,0.09);--accent-mid:rgba(13,148,136,0.35);--accent-dark:rgb(13,116,110)">
+      <div class="card-top">
+        <code class="sintaxis">endlocal</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Cierra el ámbito abierto por setlocal y descarta las variables creadas dentro, devolviendo el entorno a como estaba.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EDWIN.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0d9488;--accent-soft:rgba(13,148,136,0.09);--accent-mid:rgba(13,148,136,0.35);--accent-dark:rgb(13,116,110)">
+      <div class="card-top">
+        <code class="sintaxis">%errorlevel%   ·   !errorlevel!</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Código de resultado del último comando: 0 = todo bien, cualquier otro número = error. Dentro de un bloque la forma %errorlevel% se evalúa tarde; por eso se prefiere !errorlevel! o la forma if errorlevel N.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EDWIN2.bat, YEISON.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0d9488;--accent-soft:rgba(13,148,136,0.09);--accent-mid:rgba(13,148,136,0.35);--accent-dark:rgb(13,116,110)">
+      <div class="card-top">
+        <code class="sintaxis">if errorlevel 1 ( ... ) else ( ... )</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Azúcar del intérprete que significa «errorlevel MAYOR O IGUAL que 1». No depende de la expansión, así que funciona igual dentro de bloques.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> YEISON.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0d9488;--accent-soft:rgba(13,148,136,0.09);--accent-mid:rgba(13,148,136,0.35);--accent-dark:rgb(13,116,110)">
+      <div class="card-top">
+        <code class="sintaxis">for /f ... do set CPUL=%%A   →   echo !CPUL!%%</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Patrón clásico: un for /f captura la salida de un comando en una variable y después se imprime con expansión retardada para que no salga vacía.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> WinSysToolkit-ELKIN.bat</p>
+      
+    </div>
+    
+  </article>
+
+
+
+  <section class="parte" style="--pcolor:#ea580c;--psoft:rgba(234,88,12,0.14);--pdark:rgb(167,67,18)">
+    <div class="parte-card">
+      <p class="parte-eyebrow">Parte II</p>
+      <h1>Argumentos y control de flujo</h1>
+      <p class="parte-sub">Cómo recibe datos el script y cómo decide, salta y reutiliza código.</p>
+      <ul class="parte-lista">
+        <li><span class="pt-num">06</span><span class="pt-tit">Argumentos y modificadores</span><span class="pt-count">9</span></li><li><span class="pt-num">07</span><span class="pt-tit">Condicionales — IF</span><span class="pt-count">10</span></li><li><span class="pt-num">08</span><span class="pt-tit">Etiquetas y saltos — GOTO</span><span class="pt-count">6</span></li><li><span class="pt-num">09</span><span class="pt-tit">Subrutinas — CALL</span><span class="pt-count">8</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <article class="seccion" style="--accent:#ea580c;--accent-soft:rgba(234,88,12,0.1);--accent-mid:rgba(234,88,12,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">06</div>
+      <div class="sec-txt">
+        <h2>Argumentos y modificadores</h2>
+        <p>Cómo llegan los datos al script desde la línea de comandos o desde un archivo arrastrado sobre el icono, y cómo extraer partes de una ruta.</p>
+      </div>
+      <div class="sec-count"><b>9</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#ea580c;--accent-soft:rgba(234,88,12,0.09);--accent-mid:rgba(234,88,12,0.35);--accent-dark:rgb(178,71,17)">
+      <div class="card-top">
+        <code class="sintaxis">echo %0 %1 %2 %3</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Al ejecutar script.bat Pedro 20: %0 es el nombre del script, %1 es Pedro y %2 es 20. Los argumentos llegan hasta %9.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#ea580c;--accent-soft:rgba(234,88,12,0.09);--accent-mid:rgba(234,88,12,0.35);--accent-dark:rgb(178,71,17)">
+      <div class="card-top">
+        <code class="sintaxis">%*</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Contiene TODOS los argumentos a la vez; combinado con un for, se recorren uno a uno.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> for %%n in (%*) do @echo %%n</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#ea580c;--accent-soft:rgba(234,88,12,0.09);--accent-mid:rgba(234,88,12,0.35);--accent-dark:rgb(178,71,17)">
+      <div class="card-top">
+        <code class="sintaxis">shift</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Desplaza los argumentos una posición: %2 pasa a ser %1, %3 a %2, etc. Sirve para procesar una lista mientras queden elementos.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#ea580c;--accent-soft:rgba(234,88,12,0.09);--accent-mid:rgba(234,88,12,0.35);--accent-dark:rgb(178,71,17)">
+      <div class="card-top">
+        <code class="sintaxis">shift /1   ·   shift /2</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Descartan a partir del argumento indicado: /1 elimina el primero, /2 elimina el segundo.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#ea580c;--accent-soft:rgba(234,88,12,0.09);--accent-mid:rgba(234,88,12,0.35);--accent-dark:rgb(178,71,17)">
+      <div class="card-top">
+        <code class="sintaxis">%~f1  %~d1  %~p1  %~n1  %~x1</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Modificadores que extraen partes del argumento SIN las comillas: ruta completa, unidad, ruta, nombre y extensión.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat (programa 6)</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#ea580c;--accent-soft:rgba(234,88,12,0.09);--accent-mid:rgba(234,88,12,0.35);--accent-dark:rgb(178,71,17)">
+      <div class="card-top">
+        <code class="sintaxis">%~s1  %~a1  %~t1  %~z1</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Ruta corta 8.3, atributos del archivo, fecha y hora de modificación, y tamaño en bytes.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#ea580c;--accent-soft:rgba(234,88,12,0.09);--accent-mid:rgba(234,88,12,0.35);--accent-dark:rgb(178,71,17)">
+      <div class="card-top">
+        <code class="sintaxis">cd /d "%~dp0"</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">%~dp0 es la carpeta donde vive el .bat (unidad + ruta, sin comillas) y cd /d cambia también de unidad. Así las rutas relativas funcionan aunque el script se lance desde otra carpeta.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> broma.bat, snapshot.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#ea580c;--accent-soft:rgba(234,88,12,0.09);--accent-mid:rgba(234,88,12,0.35);--accent-dark:rgb(178,71,17)">
+      <div class="card-top">
+        <code class="sintaxis">powershell -File "%~dp0comparar.ps1" -Antes "%~1" -Despues "%~2"</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Patrón puente: el .bat recibe los argumentos (por ejemplo dos archivos arrastrados sobre el icono) y se los pasa a un script de PowerShell.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> comparar.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#ea580c;--accent-soft:rgba(234,88,12,0.09);--accent-mid:rgba(234,88,12,0.35);--accent-dark:rgb(178,71,17)">
+      <div class="card-top">
+        <code class="sintaxis">if "%1"=="/?" goto AYUDA</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Convención de Windows: si el usuario invoca el script con /? se debe mostrar la ayuda. También se usa if not "%~1"=="hola" echo hola.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+    
+  </article>
+
+  <article class="seccion" style="--accent:#dc2626;--accent-soft:rgba(220,38,38,0.1);--accent-mid:rgba(220,38,38,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">07</div>
+      <div class="sec-txt">
+        <h2>Condicionales — IF</h2>
+        <p>Comparar cadenas, números, archivos y códigos de error. Es la sección donde se concentran los errores de sintaxis más comunes del proyecto.</p>
+      </div>
+      <div class="sec-count"><b>10</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#dc2626;--accent-soft:rgba(220,38,38,0.09);--accent-mid:rgba(220,38,38,0.35);--accent-dark:rgb(168,33,37)">
+      <div class="card-top">
+        <code class="sintaxis">if "%opcion%"=="1" (
+    echo Has elegido la opcion 1
+    pause
+)</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Comparación de CADENAS dentro de un bloque: los paréntesis agrupan varias instrucciones bajo una sola condición, y se indentan para leerse. Entrecomilla siempre las dos partes: cuesta nada y evita el fallo más frecuente de batch.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CAMILO.bat, JAIRO.bat, ROYNER.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#dc2626;--accent-soft:rgba(220,38,38,0.09);--accent-mid:rgba(220,38,38,0.35);--accent-dark:rgb(168,33,37)">
+      <div class="card-top">
+        <code class="sintaxis">if exist "%~dp0datos.txt" (
+    type "%~dp0datos.txt"
+) else (
+    echo Falta el archivo de datos.
+    pause
+)</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">if ... else: el paréntesis de cierre, la palabra else y el de apertura van en la MISMA línea («) else (») con espacios; así se elige entre dos bloques completos, cada uno con sus propias instrucciones.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat, EDWIN2.bat, snapshot.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#dc2626;--accent-soft:rgba(220,38,38,0.09);--accent-mid:rgba(220,38,38,0.35);--accent-dark:rgb(168,33,37)">
+      <div class="card-top">
+        <code class="sintaxis">if "%opcion%"=="1" (
+    goto opcion1
+) else if "%opcion%"=="2" (
+    goto opcion2
+) else (
+    echo Opcion invalida
+    goto menu
+)</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Cadena de alternativas sin anidar bloques: cada «) else if (...)» añade una condición nueva y el último «) else (» es el caso por defecto. Es el equivalente batch de un switch.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat, JEINER.bat, YORMAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#dc2626;--accent-soft:rgba(220,38,38,0.09);--accent-mid:rgba(220,38,38,0.35);--accent-dark:rgb(168,33,37)">
+      <div class="card-top">
+        <code class="sintaxis">if /i "%respuesta%"=="S" (
+    echo Actualizando el sistema...
+    goto actualizar
+)</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">El modificador /i compara sin distinguir mayúsculas: s, S y sO valen lo mismo. Indispensable en las preguntas de S/N.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CRISTIAN.bat, ROYNER.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#dc2626;--accent-soft:rgba(220,38,38,0.09);--accent-mid:rgba(220,38,38,0.35);--accent-dark:rgb(168,33,37)">
+      <div class="card-top">
+        <code class="sintaxis">if not "%CLAVE%"=="%PASS%" (
+    echo Clave incorrecta
+    goto menu
+)</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">not niega la condición y deja el bloque para el caso contrario; con él se construye el login de IRAIDA.bat.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> IRAIDA.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#dc2626;--accent-soft:rgba(220,38,38,0.09);--accent-mid:rgba(220,38,38,0.35);--accent-dark:rgb(168,33,37)">
+      <div class="card-top">
+        <code class="sintaxis">if %edad% GEQ 18 (
+    echo MAYOR DE EDAD
+) else (
+    echo MENOR DE EDAD
+)</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Comparaciones numéricas: EQU igual, NEQ distinto, LSS menor, LEQ menor o igual, GTR mayor, GEQ mayor o igual. Solo para números: para texto se usa ==.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#dc2626;--accent-soft:rgba(220,38,38,0.09);--accent-mid:rgba(220,38,38,0.35);--accent-dark:rgb(168,33,37)">
+      <div class="card-top">
+        <code class="sintaxis">if not exist "%~dp0Reportes\" (
+    mkdir "%~dp0Reportes"
+    echo Carpeta creada.
+) else (
+    echo La carpeta ya existe.
+)</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">La barra invertida antes de la comilla de cierre hace que if exist compruebe una CARPETA y no un archivo; con if not exist se crea solo si falta, el patrón de las carpetas de salida.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> WinSysToolkit-ELKIN.bat, DANIEL.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#dc2626;--accent-soft:rgba(220,38,38,0.09);--accent-mid:rgba(220,38,38,0.35);--accent-dark:rgb(168,33,37)">
+      <div class="card-top">
+        <code class="sintaxis">net session &gt;nul 2&gt;&amp;1
+if errorlevel 1 (
+    echo Necesitas permisos de administrador.
+    pause
+    exit /b 1
+)</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">if errorlevel N significa «errorlevel mayor o igual que N»: detecta cualquier error sin depender de la expansión y por eso es la forma preferible dentro de bloques. Aquí comprueba si el script corre como administrador.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, EDWIN.bat, YORMAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#dc2626;--accent-soft:rgba(220,38,38,0.09);--accent-mid:rgba(220,38,38,0.35);--accent-dark:rgb(168,33,37)">
+      <div class="card-top">
+        <code class="sintaxis">if defined VAR (
+    echo VAR vale %VAR%
+) else (
+    echo VAR no esta definida
+)</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">if defined comprueba si la variable EXISTE, aunque esté vacía, sin expandirla: la forma segura de preguntar por una variable que puede no haberse creado nunca.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> no aparece en los scripts; variante de apoyo</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#dc2626;--accent-soft:rgba(220,38,38,0.09);--accent-mid:rgba(220,38,38,0.35);--accent-dark:rgb(168,33,37)">
+      <div class="card-top">
+        <code class="sintaxis">if %opcion%==1 (
+    echo Opcion 1
+)</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">TRAMPA: sin comillas, si la variable quedó vacía la línea se convierte en «if ==1» y el script muere con error de sintaxis. Pasa siempre que el usuario pulsa Enter en un set /p.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: if "%opcion%"=="1" ( ... )</p>
+      
+    </div>
+    
+  </article>
+
+  <article class="seccion" style="--accent:#be123c;--accent-soft:rgba(190,18,60,0.1);--accent-mid:rgba(190,18,60,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">08</div>
+      <div class="sec-txt">
+        <h2>Etiquetas y saltos — GOTO</h2>
+        <p>Batch no tiene control de flujo estructurado: tiene etiquetas y saltos. Con eso se construyen los menús, las páginas de ayuda y hasta un while simulado.</p>
+      </div>
+      <div class="sec-count"><b>6</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#be123c;--accent-soft:rgba(190,18,60,0.09);--accent-mid:rgba(190,18,60,0.35);--accent-dark:rgb(145,18,53)">
+      <div class="card-top">
+        <code class="sintaxis">:menu</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Crea una etiqueta: es solo un marcador, no ejecuta nada. El nombre no distingue mayúsculas, así que :menu y :MENU son la misma.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CAMILO.bat, JORGE.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#be123c;--accent-soft:rgba(190,18,60,0.09);--accent-mid:rgba(190,18,60,0.35);--accent-dark:rgb(145,18,53)">
+      <div class="card-top">
+        <code class="sintaxis">goto menu</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Salta a la etiqueta. También se escribe goto :menu con dos puntos y es equivalente. Es el mecanismo de todos los menús: cada opción termina volviendo a :menu para repintarlo.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> los 20+ scripts del proyecto</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#be123c;--accent-soft:rgba(190,18,60,0.09);--accent-mid:rgba(190,18,60,0.35);--accent-dark:rgb(145,18,53)">
+      <div class="card-top">
+        <code class="sintaxis">goto :EOF</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Sintaxis reservada que significa «fin del script o de la subrutina actual». Es el return genérico: detiene la ejecución sin cerrar la ventana.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat, EDWIN.bat, JAIRO.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#be123c;--accent-soft:rgba(190,18,60,0.09);--accent-mid:rgba(190,18,60,0.35);--accent-dark:rgb(145,18,53)">
+      <div class="card-top">
+        <code class="sintaxis">:AYUDA ... :FIN   +   goto AYUDA</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Patrón de «páginas» del script: cada etiqueta es una pantalla y goto salta entre ellas.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat (fragmento repite)</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#be123c;--accent-soft:rgba(190,18,60,0.09);--accent-mid:rgba(190,18,60,0.35);--accent-dark:rgb(145,18,53)">
+      <div class="card-top">
+        <code class="sintaxis">:while1 ... if %x% leq 8 ( ... ) ... goto :while1</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">WHILE simulado: batch no tiene while, se inventa con una etiqueta, un if y un goto que vuelve a la etiqueta. WinSysToolkit lo usa para el monitoreo continuo (timeout /t 3 + goto LOOP_MON).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat, WinSysToolkit-ELKIN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#be123c;--accent-soft:rgba(190,18,60,0.09);--accent-mid:rgba(190,18,60,0.35);--accent-dark:rgb(145,18,53)">
+      <div class="card-top">
+        <code class="sintaxis">:estudio ... :descanso ... (sin goto final)</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">Si una sección no termina en goto menu o goto fin, la ejecución SIGUE y cae en la etiqueta siguiente, que se ejecuta sin que el usuario la elija.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> angela.bat</p>
+      <p class="aviso"><span class="aviso-ico">!</span> Cierra siempre cada sección con un salto explícito: pause + goto menu, o goto :EOF.</p>
+    </div>
+    
+  </article>
+
+  <article class="seccion" style="--accent:#c026d3;--accent-soft:rgba(192,38,211,0.1);--accent-mid:rgba(192,38,211,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">09</div>
+      <div class="sec-txt">
+        <h2>Subrutinas — CALL</h2>
+        <p>call convierte una etiqueta en una función reutilizable con parámetros y valor de retorno. Es la diferencia entre un script copiado y pegado y uno mantenible.</p>
+      </div>
+      <div class="sec-count"><b>8</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#c026d3;--accent-soft:rgba(192,38,211,0.09);--accent-mid:rgba(192,38,211,0.35);--accent-dark:rgb(147,33,166)">
+      <div class="card-top">
+        <code class="sintaxis">call :suma 5 3</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Ejecuta la etiqueta :suma del propio archivo pasándole argumentos (dentro son %1 y %2) y regresa a la línea siguiente cuando la subrutina hace goto :EOF o exit /b.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat (:suma, :resta)</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#c026d3;--accent-soft:rgba(192,38,211,0.09);--accent-mid:rgba(192,38,211,0.35);--accent-dark:rgb(147,33,166)">
+      <div class="card-top">
+        <code class="sintaxis">call :MoverPorTipo "01_Gestion" "docx doc pdf"</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Subrutina con varios parámetros: dentro, %~1 y %~2 los reciben sin comillas. Evita repetir cinco veces el mismo bucle de mover archivos por extensión.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JAIRO.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#c026d3;--accent-soft:rgba(192,38,211,0.09);--accent-mid:rgba(192,38,211,0.35);--accent-dark:rgb(147,33,166)">
+      <div class="card-top">
+        <code class="sintaxis">call :Confirmar "¿Continuar con el analisis?"</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Subrutina reutilizable que pregunta S/N y devuelve el resultado como código: exit /b 0 si acepta y exit /b 1 si no. El llamador hace if errorlevel 1 goto Menu.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#c026d3;--accent-soft:rgba(192,38,211,0.09);--accent-mid:rgba(192,38,211,0.35);--accent-dark:rgb(147,33,166)">
+      <div class="card-top">
+        <code class="sintaxis">call :REVISAR_SERVICIO "MapsBroker" "Descripcion" "Manual"</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Lo más avanzado: una subrutina recibe servicio, justificación y sugerencia, usa setlocal/endlocal para no ensuciar el entorno y se llama una vez por cada servicio.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EDWIN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#c026d3;--accent-soft:rgba(192,38,211,0.09);--accent-mid:rgba(192,38,211,0.35);--accent-dark:rgb(147,33,166)">
+      <div class="card-top">
+        <code class="sintaxis">call "%~dp0counter.bat"</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">call también lanza OTRO archivo .bat sin cerrar la ventana actual. Sin call, el script externo toma el control y el actual no continúa.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> broma.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#c026d3;--accent-soft:rgba(192,38,211,0.09);--accent-mid:rgba(192,38,211,0.35);--accent-dark:rgb(147,33,166)">
+      <div class="card-top">
+        <code class="sintaxis">call npm install -g pnpm</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">call envuelve también comandos que en realidad son .bat o .cmd (npm lo es); sin el call, el script actual terminaría ahí.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> YORMAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#c026d3;--accent-soft:rgba(192,38,211,0.09);--accent-mid:rgba(192,38,211,0.35);--accent-dark:rgb(147,33,166)">
+      <div class="card-top">
+        <code class="sintaxis">@echo off&amp;call:main&amp;goto:EOF</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Todo en una línea con &amp; como separador de comandos: apaga el eco, llama a la subrutina principal y termina. Nota: call:main sin espacio también es válido.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      <p class="aviso"><span class="aviso-ico">!</span> El goto:EOF final es obligatorio: sin él, al terminar :main la ejecución «cae» dentro de :suma.</p>
+    </div>
+
+    <div class="card" style="--accent:#c026d3;--accent-soft:rgba(192,38,211,0.09);--accent-mid:rgba(192,38,211,0.35);--accent-dark:rgb(147,33,166)">
+      <div class="card-top">
+        <code class="sintaxis">comando1 &amp; comando2</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">El ampersand encadena varias instrucciones en la misma línea; se ejecutan una tras otra sin importar el resultado de la anterior.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat, IRAIDA.bat</p>
+      
+    </div>
+    
+  </article>
+
+
+
+  <section class="parte" style="--pcolor:#4f46e5;--psoft:rgba(79,70,229,0.14);--pdark:rgb(59,54,170)">
+    <div class="parte-card">
+      <p class="parte-eyebrow">Parte III</p>
+      <h1>Bucles, salida y archivos</h1>
+      <p class="parte-sub">Recorrer, filtrar, redirigir y trabajar con archivos y carpetas.</p>
+      <ul class="parte-lista">
+        <li><span class="pt-num">10</span><span class="pt-tit">Bucles — FOR</span><span class="pt-count">12</span></li><li><span class="pt-num">11</span><span class="pt-tit">Redirección y tuberías</span><span class="pt-count">11</span></li><li><span class="pt-num">12</span><span class="pt-tit">Archivos y carpetas</span><span class="pt-count">8</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <article class="seccion" style="--accent:#4f46e5;--accent-soft:rgba(79,70,229,0.1);--accent-mid:rgba(79,70,229,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">10</div>
+      <div class="sec-txt">
+        <h2>Bucles — FOR</h2>
+        <p>El comando más potente del batch: recorre listas, archivos, carpetas, árboles completos y la salida de otros comandos. Sus opciones /d, /R y /f son las que más se usan en el proyecto.</p>
+      </div>
+      <div class="sec-count"><b>12</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#4f46e5;--accent-soft:rgba(79,70,229,0.09);--accent-mid:rgba(79,70,229,0.35);--accent-dark:rgb(62,57,180)">
+      <div class="card-top">
+        <code class="sintaxis">for %%x in (1 3 4 6 87) do (
+    echo Numero: %%x
+)</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Recorre una lista literal metiendo varias instrucciones dentro del bloque. En un .bat la variable del bucle lleva DOS porcentajes: con uno solo se expandiría como variable. La letra es libre (i, f, A, E...).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#4f46e5;--accent-soft:rgba(79,70,229,0.09);--accent-mid:rgba(79,70,229,0.35);--accent-dark:rgb(62,57,180)">
+      <div class="card-top">
+        <code class="sintaxis">for %%f in (*.txt) do (
+    echo Procesando %%f
+    type "%%f" &gt;&gt; "salida.txt"
+)</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">La lista puede ser un comodín: aquí todos los .txt de la carpeta, y el bloque procesa cada archivo. Con (*) son todos los archivos de la carpeta actual.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat, YEISON.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#4f46e5;--accent-soft:rgba(79,70,229,0.09);--accent-mid:rgba(79,70,229,0.35);--accent-dark:rgb(62,57,180)">
+      <div class="card-top">
+        <code class="sintaxis">for /l %%i in (1,1,5) do (
+    echo Iteracion %%i
+)</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">/l genera la lista sola: inicio, paso y final (1,1,5 produce 1 2 3 4 5). Sustituye a escribir los números a mano y es la forma limpia de contar.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> no aparece en los scripts; variante de apoyo</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#4f46e5;--accent-soft:rgba(79,70,229,0.09);--accent-mid:rgba(79,70,229,0.35);--accent-dark:rgb(62,57,180)">
+      <div class="card-top">
+        <code class="sintaxis">for /d %%x in ("%temp%\*") do (
+    echo Borrando %%x
+    rd /s /q "%%x"
+)</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">/d hace que el bucle recorra solo CARPETAS del comodín, sin entrar en archivos; aquí borra cada carpeta temporal.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CAMILO.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#4f46e5;--accent-soft:rgba(79,70,229,0.09);--accent-mid:rgba(79,70,229,0.35);--accent-dark:rgb(62,57,180)">
+      <div class="card-top">
+        <code class="sintaxis">for /r "%~dp0" %%E in (*.log) do (
+    echo Encontrado: %%E
+)</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">/R recorre RECURSIVAMENTE la carpeta indicada y todas sus subcarpetas buscando el patrón; si se omite la ruta, empieza en la carpeta actual.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#4f46e5;--accent-soft:rgba(79,70,229,0.09);--accent-mid:rgba(79,70,229,0.35);--accent-dark:rgb(62,57,180)">
+      <div class="card-top">
+        <code class="sintaxis">for /f "tokens=5" %%p in ('netstat -ano ^| find "ESTABLISHED"') do (
+    echo PID conectado: %%p
+)</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">for /f analiza TEXTO línea a línea; lo encerrado en comillas simples es un COMANDO cuya salida se procesa. tokens=5 toma la quinta palabra de cada línea. El ^| es vital: escapa la tubería para que la consuma el comando interno.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, DANIEL.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#4f46e5;--accent-soft:rgba(79,70,229,0.09);--accent-mid:rgba(79,70,229,0.35);--accent-dark:rgb(62,57,180)">
+      <div class="card-top">
+        <code class="sintaxis">for /f "tokens=1,2 delims=," %%a in (datos.csv) do (
+    echo Usuario: %%a - Clave: %%b
+)</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">tokens=1,2 asigna la primera palabra a %%a y la segunda a %%b (y sigue el alfabeto: c, d...). delims=, cambia el separador: coma en lugar de espacio y tabulador.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#4f46e5;--accent-soft:rgba(79,70,229,0.09);--accent-mid:rgba(79,70,229,0.35);--accent-dark:rgb(62,57,180)">
+      <div class="card-top">
+        <code class="sintaxis">for /f "skip=3 tokens=1,2" %%a in ('tasklist') do (
+    echo Proceso: %%a con %%b
+)</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">skip=N descarta las N primeras líneas, típicamente los encabezados de la tabla, y tokens=1,2 se queda con el nombre del proceso y su consumo de memoria.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#4f46e5;--accent-soft:rgba(79,70,229,0.09);--accent-mid:rgba(79,70,229,0.35);--accent-dark:rgb(62,57,180)">
+      <div class="card-top">
+        <code class="sintaxis">for /f "tokens=2 delims=:" %%i in ('ipconfig ^| findstr /i "IPv4"') do (
+    echo IP: %%i
+)</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Con delims=: cada segmento entre dos puntos es un token, así que el valor queda en el segundo; sirve para limpiar la salida de ipconfig. La variante tokens=2,* dejaría el resto de la línea en %%j.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#4f46e5;--accent-soft:rgba(79,70,229,0.09);--accent-mid:rgba(79,70,229,0.35);--accent-dark:rgb(62,57,180)">
+      <div class="card-top">
+        <code class="sintaxis">for %%E in (txt log) do (
+    for %%F in ("*.%%E") do (
+        echo Archivo: %%~nxF
+    )
+)</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">FOR ANIDADOS con los paréntesis balanceados. Dentro se usan los modificadores de la variable de bucle: %%~nF (nombre sin extensión), %%~xF (solo extensión), %%~nxF (nombre completo), %%~dF y %%~pF (unidad y ruta).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JAIRO.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#4f46e5;--accent-soft:rgba(79,70,229,0.09);--accent-mid:rgba(79,70,229,0.35);--accent-dark:rgb(62,57,180)">
+      <div class="card-top">
+        <code class="sintaxis">set "BAR="
+for %%A in (1 2 3 4 5) do (
+    set "BAR=!BAR!#"
+    cls
+    echo !BAR!
+)</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Dentro de un bloque de for, toda variable que se MODIFICA debe leerse con !...!, porque %...% se congela al entrar al bloque. Así se arma la barra de carga de EDWIN2.bat.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EDWIN2.bat, JAIRO.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#4f46e5;--accent-soft:rgba(79,70,229,0.09);--accent-mid:rgba(79,70,229,0.35);--accent-dark:rgb(62,57,180)">
+      <div class="card-top">
+        <code class="sintaxis">for %%i in (1 2 3) do (
+    call :RUN_OPTION %%i
+)</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Patrón «ejecutar todo»: el for llama a la subrutina pasándole el número de opción, para la opción A de ejecutar todas las auditorías.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat</p>
+      
+    </div>
+    
+  </article>
+
+  <article class="seccion" style="--accent:#0284c7;--accent-soft:rgba(2,132,199,0.1);--accent-mid:rgba(2,132,199,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">11</div>
+      <div class="sec-txt">
+        <h2>Redirección y tuberías</h2>
+        <p>Mover la salida y los errores entre la pantalla, los archivos y otros comandos. Es la base de todos los reportes y logs del proyecto.</p>
+      </div>
+      <div class="sec-count"><b>11</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#0284c7;--accent-soft:rgba(2,132,199,0.09);--accent-mid:rgba(2,132,199,0.35);--accent-dark:rgb(4,104,157)">
+      <div class="card-top">
+        <code class="sintaxis">dir &gt; todos.txt</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">&gt; envía la salida a un archivo SOBRESCRIBIENDO lo que hubiera dentro.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0284c7;--accent-soft:rgba(2,132,199,0.09);--accent-mid:rgba(2,132,199,0.35);--accent-dark:rgb(4,104,157)">
+      <div class="card-top">
+        <code class="sintaxis">ipconfig &gt;&gt; archivo.txt</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">&gt;&gt; AÑADE al final del archivo sin borrar lo anterior. Es el más usado en reportes e historiales.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JHOJAN.bat, EDWIN2.bat, DANIEL.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0284c7;--accent-soft:rgba(2,132,199,0.09);--accent-mid:rgba(2,132,199,0.35);--accent-dark:rgb(4,104,157)">
+      <div class="card-top">
+        <code class="sintaxis">systeminfo &gt; "%REPORTS%\systeminfo.txt" 2&gt;nul</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">2&gt;nul oculta los ERRORES (stderr) mientras la salida normal sí va al archivo. Si el comando falla por permisos, no ensucia la consola.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat, EDWIN.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0284c7;--accent-soft:rgba(2,132,199,0.09);--accent-mid:rgba(2,132,199,0.35);--accent-dark:rgb(4,104,157)">
+      <div class="card-top">
+        <code class="sintaxis">net session &gt;nul 2&gt;&amp;1</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">El combo para callar un comando por completo: &gt;nul manda la salida normal a la basura y 2&gt;&amp;1 redirige los errores al mismo sitio. No se ve absolutamente nada.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, JUANDIEGO-AUTO.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0284c7;--accent-soft:rgba(2,132,199,0.09);--accent-mid:rgba(2,132,199,0.35);--accent-dark:rgb(4,104,157)">
+      <div class="card-top">
+        <code class="sintaxis">ipconfig /all | findstr /i "IPv4"</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">La tubería | usa la salida de un comando como ENTRADA del siguiente, que la filtra.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EDWIN2.bat, WinSysToolkit-ELKIN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0284c7;--accent-soft:rgba(2,132,199,0.09);--accent-mid:rgba(2,132,199,0.35);--accent-dark:rgb(4,104,157)">
+      <div class="card-top">
+        <code class="sintaxis">findstr /i /c:"texto" /b /v</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Filtro potente: /i sin distinguir mayúsculas, /c busca la frase completa, /b ancla al inicio de línea y /v invierte el resultado (muestra lo que NO coincide).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EDWIN2.bat, JULIAN.bat, DANIEL.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0284c7;--accent-soft:rgba(2,132,199,0.09);--accent-mid:rgba(2,132,199,0.35);--accent-dark:rgb(4,104,157)">
+      <div class="card-top">
+        <code class="sintaxis">( echo Fecha: %date% &amp; winget list ) &gt; "%reporte%" 2&gt;&amp;1</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Los PARÉNTESIS agrupan varias instrucciones como una sola y la redirección se aplica al conjunto: todo el bloque cae al archivo. Es la forma limpia de generar reportes multi-línea.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CRISTIAN.bat, ROYNER.bat, YORMAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0284c7;--accent-soft:rgba(2,132,199,0.09);--accent-mid:rgba(2,132,199,0.35);--accent-dark:rgb(4,104,157)">
+      <div class="card-top">
+        <code class="sintaxis">echo [%date% %time%] Opcion 1&gt;&gt;historial.log</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Patrón de LOG: una línea por acción, con marca de tiempo y acumulada con &gt;&gt;.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> IRAIDA.bat, EDWIN2.bat, DANIEL.bat</p>
+      <p class="aviso"><span class="aviso-ico">!</span> Ojo al espacio antes de &gt;&gt;: «echo algo &gt;&gt; archivo» guarda «algo » con espacio final; si molesta, escribe «echo algo&gt;&gt; archivo».</p>
+    </div>
+
+    <div class="card" style="--accent:#0284c7;--accent-soft:rgba(2,132,199,0.09);--accent-mid:rgba(2,132,199,0.35);--accent-dark:rgb(4,104,157)">
+      <div class="card-top">
+        <code class="sintaxis">type historial.log</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Imprime el contenido de un archivo en pantalla (el equivalente a cat de Linux).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> IRAIDA.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0284c7;--accent-soft:rgba(2,132,199,0.09);--accent-mid:rgba(2,132,199,0.35);--accent-dark:rgb(4,104,157)">
+      <div class="card-top">
+        <code class="sintaxis">del /q /f "%TEMP%\*" &gt;nul 2&gt;&amp;1</code>
+        <span class="badge" style="--bc:#b91c1c;--bc-soft:rgba(185,28,28,0.12)">peligro</span>
+      </div>
+      <p class="exp">del borra archivos: /q no pregunta uno por uno y /f fuerza los de solo lectura; el &gt;nul 2&gt;&amp;1 silencia los que estén en uso.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, JULIAN.bat, CAMILO.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0284c7;--accent-soft:rgba(2,132,199,0.09);--accent-mid:rgba(2,132,199,0.35);--accent-dark:rgb(4,104,157)">
+      <div class="card-top">
+        <code class="sintaxis">rd /s /q "C:\ruta"</code>
+        <span class="badge" style="--bc:#b91c1c;--bc-soft:rgba(185,28,28,0.12)">peligro</span>
+      </div>
+      <p class="exp">rd borra una carpeta CON todo su contenido, sin preguntar (/q) y con subcarpetas (/s).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, CAMILO.bat</p>
+      <p class="aviso"><span class="aviso-ico">!</span> Es irreversible: no pasa por la papelera. Confirma siempre con una pregunta S/N antes de usarlo.</p>
+    </div>
+    
+  </article>
+
+  <article class="seccion" style="--accent:#65a30d;--accent-soft:rgba(101,163,13,0.1);--accent-mid:rgba(101,163,13,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">12</div>
+      <div class="sec-txt">
+        <h2>Archivos y carpetas</h2>
+        <p>Los comandos de manipulación de archivos que aparecen dentro de los scripts: listar, crear, copiar, comparar y dibujar árboles.</p>
+      </div>
+      <div class="sec-count"><b>8</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#65a30d;--accent-soft:rgba(101,163,13,0.09);--accent-mid:rgba(101,163,13,0.35);--accent-dark:rgb(79,127,18)">
+      <div class="card-top">
+        <code class="sintaxis">dir /a-d /b /on   ·   dir /ad /b /on</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">dir lista un directorio: /a-d solo archivos (sin carpetas), /ad solo carpetas, /b formato limpio sin adornos y /on ordena por nombre.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat (list.bat)</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#65a30d;--accent-soft:rgba(101,163,13,0.09);--accent-mid:rgba(101,163,13,0.35);--accent-dark:rgb(79,127,18)">
+      <div class="card-top">
+        <code class="sintaxis">mkdir carpeta   ·   md carpeta</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Crean una carpeta (md y mkdir son lo mismo). Si ya existe dan un error inofensivo, por eso se usan junto a if not exist.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat, YEISON.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#65a30d;--accent-soft:rgba(101,163,13,0.09);--accent-mid:rgba(101,163,13,0.35);--accent-dark:rgb(79,127,18)">
+      <div class="card-top">
+        <code class="sintaxis">copy /y origen destino   ·   move origen destino</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">copy copia (con /y no pregunta antes de sobrescribir) y move mueve o renombra.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> YEISON.bat, JAIRO.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#65a30d;--accent-soft:rgba(101,163,13,0.09);--accent-mid:rgba(101,163,13,0.35);--accent-dark:rgb(79,127,18)">
+      <div class="card-top">
+        <code class="sintaxis">xcopy "%origen%" "%destino%" /E /I</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Copia árboles completos: /E incluye carpetas vacías y /I asume que el destino es una carpeta aunque esté vacío.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> ERIKA.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#65a30d;--accent-soft:rgba(101,163,13,0.09);--accent-mid:rgba(101,163,13,0.35);--accent-dark:rgb(79,127,18)">
+      <div class="card-top">
+        <code class="sintaxis">del Historial\*.tmp</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Borra por comodín los temporales creados, por ejemplo después de comparar instantáneas.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> YEISON.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#65a30d;--accent-soft:rgba(101,163,13,0.09);--accent-mid:rgba(101,163,13,0.35);--accent-dark:rgb(79,127,18)">
+      <div class="card-top">
+        <code class="sintaxis">attrib "archivo"</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Muestra o cambia los atributos de un archivo: oculto, solo lectura, sistema, archivo.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> varios</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#65a30d;--accent-soft:rgba(101,163,13,0.09);--accent-mid:rgba(101,163,13,0.35);--accent-dark:rgb(79,127,18)">
+      <div class="card-top">
+        <code class="sintaxis">fc archivo1 archivo2</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">File Compare: compara dos archivos y devuelve errorlevel distinto de 0 si difieren. Con /A muestra solo las líneas que cambian, /N añade el número de línea y /B compara en binario.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> YEISON.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#65a30d;--accent-soft:rgba(101,163,13,0.09);--accent-mid:rgba(101,163,13,0.35);--accent-dark:rgb(79,127,18)">
+      <div class="card-top">
+        <code class="sintaxis">tree C:\ /f /a</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Dibuja el árbol de carpetas: /f incluye los archivos y /a usa solo caracteres ASCII, útil para guardarlo en un reporte.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat</p>
+      
+    </div>
+    
+  </article>
+
+
+
+  <section class="parte" style="--pcolor:#b45309;--psoft:rgba(180,83,9,0.14);--pdark:rgb(129,63,16)">
+    <div class="parte-card">
+      <p class="parte-eyebrow">Parte IV</p>
+      <h1>Recetas y trampas reales</h1>
+      <p class="parte-sub">Los patrones que se repiten en todos los scripts y los errores que hay que evitar.</p>
+      <ul class="parte-lista">
+        <li><span class="pt-num">13</span><span class="pt-tit">Patrones recurrentes</span><span class="pt-count">13</span></li><li><span class="pt-num">14</span><span class="pt-tit">Errores y trampas reales</span><span class="pt-count">13</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <article class="seccion" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.1);--accent-mid:rgba(180,83,9,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">13</div>
+      <div class="sec-txt">
+        <h2>Patrones recurrentes</h2>
+        <p>Combinaciones completas que aparecen una y otra vez en los 26 scripts. Más que sintaxis, son las recetas con las que se arma cualquier .bat de administración.</p>
+      </div>
+      <div class="sec-count"><b>13</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.09);--accent-mid:rgba(180,83,9,0.35);--accent-dark:rgb(138,67,15)">
+      <div class="card-top">
+        <code class="sintaxis">:menu → cls → echo opciones → set /p → if → goto</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">EL patrón número uno del taller: pantalla limpia, opciones numeradas, lectura con set /p, un if por opción que salta a su etiqueta y cada opción termina en pause + goto menu.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CAMILO.bat, EDWIN.bat, JORGE.bat, IRAIDA.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.09);--accent-mid:rgba(180,83,9,0.35);--accent-dark:rgb(138,67,15)">
+      <div class="card-top">
+        <code class="sintaxis">if "%opcion%"=="" goto menu</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Validación de entrada vacía o inválida antes de procesarla; la versión rápida es dejar caer al final del menú con un goto menu sin condición, como opción por defecto.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CRISTIAN.bat, JAIRO.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.09);--accent-mid:rgba(180,83,9,0.35);--accent-dark:rgb(138,67,15)">
+      <div class="card-top">
+        <code class="sintaxis">set "op="   (antes de set /p)</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Higiene de menús: borrar la variable antes de leerla evita que, al pulsar Enter sin escribir, quede el valor anterior y se repita la acción por accidente.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CRISTIAN.bat, JAIRO.bat, broma.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.09);--accent-mid:rgba(180,83,9,0.35);--accent-dark:rgb(138,67,15)">
+      <div class="card-top">
+        <code class="sintaxis">set /p resp= Desea continuar? (S/N):   →   if /i "%resp%"=="S"</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Confirmación antes de acciones destructivas o largas, presente en actualizaciones, borrados y análisis del sistema.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CRISTIAN.bat, ROYNER.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.09);--accent-mid:rgba(180,83,9,0.35);--accent-dark:rgb(138,67,15)">
+      <div class="card-top">
+        <code class="sintaxis">net session &gt;nul 2&gt;&amp;1   &amp;   if %errorlevel% neq 0 ( ... )</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Comprobación de privilegios: si el script no corre como administrador, se avisa o se relanza elevado.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, JUANDIEGO-AUTO.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.09);--accent-mid:rgba(180,83,9,0.35);--accent-dark:rgb(138,67,15)">
+      <div class="card-top">
+        <code class="sintaxis">set "salida=%~dp0Reportes" &amp; if not exist "%salida%" mkdir "%salida%"</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Carpeta de salida junto al .bat, creada solo si falta, para que los reportes no se dispersen por el disco.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat, EDWIN.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.09);--accent-mid:rgba(180,83,9,0.35);--accent-dark:rgb(138,67,15)">
+      <div class="card-top">
+        <code class="sintaxis">( echo ... &amp; comando &amp; echo ... ) &gt; "%archivo%"</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Reporte de una sola pasada: agrupar todo el bloque y redirigir el conjunto. Cambia el orden y el contenido según el autor, pero la idea es idéntica.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CRISTIAN.bat, ROYNER.bat, YORMAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.09);--accent-mid:rgba(180,83,9,0.35);--accent-dark:rgb(138,67,15)">
+      <div class="card-top">
+        <code class="sintaxis">echo [%date% %time%] mensaje&gt;&gt;"%LOG%"</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Registro de actividad: una línea con marca de tiempo por cada acción ejecutada.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EDWIN2.bat, IRAIDA.bat, DANIEL.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.09);--accent-mid:rgba(180,83,9,0.35);--accent-dark:rgb(138,67,15)">
+      <div class="card-top">
+        <code class="sintaxis">set "TS=%DATE:/=-%_%TIME::=-%"</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Marca de tiempo para nombres de archivo, en su versión 100 % batch (la variante con Get-Date es la inmune a la configuración regional).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> ROYNER.bat, snapshot.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.09);--accent-mid:rgba(180,83,9,0.35);--accent-dark:rgb(138,67,15)">
+      <div class="card-top">
+        <code class="sintaxis">set BAR=   →   for %%A in (1 2 3 ...) do ( set BAR=!BAR!# &amp; cls &amp; echo !BAR! )</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Barra de carga o animación de presentación: la variable crece dentro del for y se repinta con cls. El «ping 127.0.0.1 -n 4 &gt;nul» que suele acompañarla es un sleep casero; timeout es mejor.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EDWIN2.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.09);--accent-mid:rgba(180,83,9,0.35);--accent-dark:rgb(138,67,15)">
+      <div class="card-top">
+        <code class="sintaxis">if exist "estado\fondo_original.txt" ( ... ) else ( ... )</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Archivos de estado (.flag): el script guarda en una carpeta «estado» qué se aplicó, para que otro script sepa qué deshacer. Es la base de cualquier script reversible.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> broma.bat / counter.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.09);--accent-mid:rgba(180,83,9,0.35);--accent-dark:rgb(138,67,15)">
+      <div class="card-top">
+        <code class="sintaxis">fc viejo nuevo &gt;nul   →   if errorlevel 1 ( avisar )</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Detección de cambios: se comparan dos instantáneas (procesos, usuarios, drivers) y se avisa si difieren.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> YEISON.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b45309;--accent-soft:rgba(180,83,9,0.09);--accent-mid:rgba(180,83,9,0.35);--accent-dark:rgb(138,67,15)">
+      <div class="card-top">
+        <code class="sintaxis">cd /d "%~dp0"   +   set "OUT=%~dp0snapshots\SNAP_%TS%.txt"</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Rutas seguras: anclarse a la carpeta del script y construir las rutas relativas desde ahí, siempre entre comillas.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> broma.bat, snapshot.bat, JULIAN.bat</p>
+      
+    </div>
+    
+  </article>
+
+  <article class="seccion" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.1);--accent-mid:rgba(185,28,28,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">14</div>
+      <div class="sec-txt">
+        <h2>Errores y trampas reales</h2>
+        <p>Fallos que ya existen en los scripts de referencia y que conviene reconocer al leerlos. Cada tarjeta muestra el código tal como está escrito (mal) y la corrección.</p>
+      </div>
+      <div class="sec-count"><b>13</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.09);--accent-mid:rgba(185,28,28,0.35);--accent-dark:rgb(142,26,29)">
+      <div class="card-top">
+        <code class="sintaxis">set origen = C:\Users\...\SO Sem 1</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">ERROR (ERIKA.bat). Los espacios alrededor del = crean la variable «origen » con un espacio de valor delante; luego %origen% se expande vacío y el xcopy no copia nada.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: set "origen=C:\Users\...\SO Sem 1"</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.09);--accent-mid:rgba(185,28,28,0.35);--accent-dark:rgb(142,26,29)">
+      <div class="card-top">
+        <code class="sintaxis">if /i "%confirmar% == "S" (</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">ERROR (ERIKA.bat). Las comillas están fuera de lugar: la comparación nunca se cumple bien y además rompe el análisis de la línea.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: if /i "%confirmar%"=="S" (</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.09);--accent-mid:rgba(185,28,28,0.35);--accent-dark:rgb(142,26,29)">
+      <div class="card-top">
+        <code class="sintaxis">if exist "%destino_base%\%carperta_destino%"(  </code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">ERROR (ERIKA.bat). Faltan los espacios antes del paréntesis y la variable está mal escrita (arriba se definió carpeta_destino). Batch no avisa del typo: expande vacío.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: if exist "%ruta%" ( ... )</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.09);--accent-mid:rgba(185,28,28,0.35);--accent-dark:rgb(142,26,29)">
+      <div class="card-top">
+        <code class="sintaxis">) else(</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">ERROR (ERIKA.bat). El else necesita espacios: escrito así, el intérprete lo toma como parte del paréntesis y el script muere.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: ) else (</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.09);--accent-mid:rgba(185,28,28,0.35);--accent-dark:rgb(142,26,29)">
+      <div class="card-top">
+        <code class="sintaxis">pause &gt; null</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">ERROR (varios fragmentos de EjemplosBatch.bat). «null» no existe en Windows: crea un ARCHIVO llamado null en la carpeta y la pausa no se silencia.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: pause &gt;nul</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.09);--accent-mid:rgba(185,28,28,0.35);--accent-dark:rgb(142,26,29)">
+      <div class="card-top">
+        <code class="sintaxis">CD..   ·   CD C:Windowssystem32</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">ERROR (EjemplosBatch.bat). CD.. sin espacio no funciona (debe ser cd ..) y «C:Windowssystem32» no es una ruta válida porque le faltan las barras.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: cd ..   ·   cd C:\Windows\system32</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.09);--accent-mid:rgba(185,28,28,0.35);--accent-dark:rgb(142,26,29)">
+      <div class="card-top">
+        <code class="sintaxis">if exist %command% echo Compiling... [salto] else goto :error</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">ERROR (EjemplosBatch.bat, bloque Java). La variable sin comillas revienta si está vacía, y el else en línea aparte no funciona tras una instrucción simple.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: if exist "%command%" ( ... ) else ( ... )</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.09);--accent-mid:rgba(185,28,28,0.35);--accent-dark:rgb(142,26,29)">
+      <div class="card-top">
+        <code class="sintaxis">set /p opcion=%1   (en un menú)</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">RARO (EjemplosBatch.bat, menu1 a menu10). %1 es el primer argumento del script; si no se le pasa, el prompt queda vacío y el usuario no sabe qué teclear.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: set /p opcion=Digite el numero:</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.09);--accent-mid:rgba(185,28,28,0.35);--accent-dark:rgb(142,26,29)">
+      <div class="card-top">
+        <code class="sintaxis">if %opcion%==1 ...   (con opcion vacía)</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">TRAMPA GENERAL: cualquier if %var%==x se rompe cuando la variable quedó vacía, porque la línea se convierte en «if ==1».</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: if "%opcion%"=="1"</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.09);--accent-mid:rgba(185,28,28,0.35);--accent-dark:rgb(142,26,29)">
+      <div class="card-top">
+        <code class="sintaxis">wmic /namespace:\\root\SecurityCenter2 ...</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">OJO (ROYNER.bat): una barra invertida antes de la comilla de cierre no escapa nada dentro de comillas dobles. Una ruta que termina en \ dentro de comillas «rompe» la comilla final.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: "%ruta%\\" o armar la ruta sin barra final</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.09);--accent-mid:rgba(185,28,28,0.35);--accent-dark:rgb(142,26,29)">
+      <div class="card-top">
+        <code class="sintaxis">echo Escaneo completado   (acentos sin chcp)</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">ERROR FRECUENTE: ver «Â¡» o «Ã©» significa que el archivo está en UTF-8 pero la consola usa otra codificación (o al revés).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: chcp 65001 &gt;nul en la primera línea + archivo guardado en UTF-8</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.09);--accent-mid:rgba(185,28,28,0.35);--accent-dark:rgb(142,26,29)">
+      <div class="card-top">
+        <code class="sintaxis">for ... do (  :: comentario  )</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">TRAMPA: los comentarios con :: fallan dentro de bloques parentizados y detrás de tuberías.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: usar rem en esos casos</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#b91c1c;--accent-soft:rgba(185,28,28,0.09);--accent-mid:rgba(185,28,28,0.35);--accent-dark:rgb(142,26,29)">
+      <div class="card-top">
+        <code class="sintaxis">echo Progreso: 50%   (porcentaje suelto)</code>
+        <span class="badge" style="--bc:#b45309;--bc-soft:rgba(180,83,9,0.12)">trampa</span>
+      </div>
+      <p class="exp">TRAMPA: un % solo intenta abrir una variable y puede comerse el resto de la línea o imprimir algo inesperado.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Correcto: echo Progreso: 50%%</p>
+      
+    </div>
+    
+  </article>
+
+
+
+  <section class="parte" style="--pcolor:#0f766e;--psoft:rgba(15,118,110,0.14);--pdark:rgb(14,88,87)">
+    <div class="parte-card">
+      <p class="parte-eyebrow">Parte AP</p>
+      <h1>Apéndices</h1>
+      <p class="parte-sub">PowerShell desde batch, comandos del sistema y de red, y chuletas de referencia rápida.</p>
+      <ul class="parte-lista">
+        <li><span class="pt-num">A</span><span class="pt-tit">PowerShell desde un .bat</span><span class="pt-count">7</span></li><li><span class="pt-num">B</span><span class="pt-tit">Comandos del sistema invocados desde el .bat</span><span class="pt-count">26</span></li><li><span class="pt-num">C</span><span class="pt-tit">Red: comandos de los talleres</span><span class="pt-count">12</span></li><li><span class="pt-num">D</span><span class="pt-tit">Chuletas de referencia rápida</span><span class="pt-count">4</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <article class="seccion" style="--accent:#1e40af;--accent-soft:rgba(30,64,175,0.1);--accent-mid:rgba(30,64,175,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">A</div>
+      <div class="sec-txt">
+        <h2>PowerShell desde un .bat</h2>
+        <p>Cuando batch no da abasto (hardware, WMI, listar archivos grandes, elevar permisos), la solución del proyecto es delegar en PowerShell desde la misma ventana.</p>
+      </div>
+      <div class="sec-count"><b>7</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#1e40af;--accent-soft:rgba(30,64,175,0.09);--accent-mid:rgba(30,64,175,0.35);--accent-dark:rgb(25,53,139)">
+      <div class="card-top">
+        <code class="sintaxis">powershell -NoProfile -Command "Get-ChildItem C:\ -File -Recurse | Sort-Object Length -Descending | Select-Object -First 20"</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Lanza PowerShell para una instrucción concreta. -NoProfile evita cargar tu configuración (más rápido y predecible).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EspacioDisco.bat, Programas.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#1e40af;--accent-soft:rgba(30,64,175,0.09);--accent-mid:rgba(30,64,175,0.35);--accent-dark:rgb(25,53,139)">
+      <div class="card-top">
+        <code class="sintaxis">powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0recolectar.ps1" -OutFile "%OUT%"</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">-ExecutionPolicy Bypass esquiva la política de ejecución y -File ejecuta un script completo con parámetros. Es el patrón recomendado cuando la lógica es seria: el .bat maneja menús y rutas, el .ps1 hace el trabajo.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> snapshot.bat, comparar.bat, enviar_correo.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#1e40af;--accent-soft:rgba(30,64,175,0.09);--accent-mid:rgba(30,64,175,0.35);--accent-dark:rgb(25,53,139)">
+      <div class="card-top">
+        <code class="sintaxis">powershell -Command "(New-Object -ComObject SAPI.SpVoice).Speak('Hola')"</code>
+        <span class="badge" style="--bc:#b91c1c;--bc-soft:rgba(185,28,28,0.12)">peligro</span>
+      </div>
+      <p class="exp">PowerShell puede usar objetos COM de Windows; aquí el sintetizador de voz. También se usa para SendKeys y MessageBox.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> broma.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#1e40af;--accent-soft:rgba(30,64,175,0.09);--accent-mid:rgba(30,64,175,0.35);--accent-dark:rgb(25,53,139)">
+      <div class="card-top">
+        <code class="sintaxis">powershell -Command "Start-Process '%~f0' -Verb RunAs"</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">AUTOELEVACIÓN: relanza el propio .bat (%~f0 es su ruta completa) pidiendo permisos de administrador. Es el equivalente moderno de runas.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JUANDIEGO-AUTO.bat, JULIAN.bat</p>
+      <p class="aviso"><span class="aviso-ico">!</span> Al elevar, Windows arranca el script desde System32: añade cd /d "%~dp0" al principio, como hace JULIAN.bat.</p>
+    </div>
+
+    <div class="card" style="--accent:#1e40af;--accent-soft:rgba(30,64,175,0.09);--accent-mid:rgba(30,64,175,0.35);--accent-dark:rgb(25,53,139)">
+      <div class="card-top">
+        <code class="sintaxis">Get-CimInstance -ClassName Win32_PhysicalMemory | Select-Object BankLabel, Capacity, Speed</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">El reemplazo moderno de wmic memorychip. Microsoft desaconseja WMIC y pide migrar a Get-CimInstance.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JHOJAN.bat, EDWIN2.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#1e40af;--accent-soft:rgba(30,64,175,0.09);--accent-mid:rgba(30,64,175,0.35);--accent-dark:rgb(25,53,139)">
+      <div class="card-top">
+        <code class="sintaxis">(Get-Process -Id 20640).Threads   ·   Get-Process | ForEach-Object { $_.Threads }</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Lista los HILOS de un proceso concreto. Sirve para conectar la teoría de procesos e hilos con la práctica: el proceso 20640 tenía 43 hilos.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Taller baterías 1</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#1e40af;--accent-soft:rgba(30,64,175,0.09);--accent-mid:rgba(30,64,175,0.35);--accent-dark:rgb(25,53,139)">
+      <div class="card-top">
+        <code class="sintaxis">... | Select-Object Id | Export-Csv -Path C:\Hilos.csv -NoTypeInformation</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Patrón de reporte: exportar el resultado a CSV sin cabecera de tipo, listo para abrir en Excel.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> Taller baterías 1</p>
+      
+    </div>
+    
+  </article>
+
+  <article class="seccion" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.1);--accent-mid:rgba(71,85,105,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">B</div>
+      <div class="sec-txt">
+        <h2>Comandos del sistema invocados desde el .bat</h2>
+        <p>No son sintaxis de batch, pero se escriben dentro de los scripts y son los que hacen el trabajo: procesos, servicios, red, energía, reparación y paquetes.</p>
+      </div>
+      <div class="sec-count"><b>26</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">start notepad   ·   start "" notepad</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">start abre un programa en una ventana NUEVA sin bloquear el script. Las comillas vacías son el TÍTULO de la ventana: son necesarias si la ruta del programa tiene espacios, porque si no start las interpretaría como título.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EDWIN2.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">start "" "https://github.com"</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">start también abre una URL con el navegador predeterminado.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, taller</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">start cmd /k systeminfo</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">cmd /k abre una consola y deja el comando corriendo sin cerrarse; con /c la cerraría al terminar. Patrón para lanzar herramientas del sistema en ventanas aparte.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">start /b cmd /c java -version</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">/b hace que el comando corra en la MISMA ventana, sin abrir otra.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">choice /c 1234567890A /n /m "Seleccione una opcion: "</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Alternativa moderna a set /p para menús: no deja teclear texto, solo pulsar una de las teclas listadas, y el código de la tecla queda en %errorlevel% (1 = primera tecla, 2 = segunda...). /n oculta la lista y /m define el mensaje.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">tasklist /v   ·   taskkill /PID 1234 /F   ·   taskkill /f /im explorer.exe</code>
+        <span class="badge" style="--bc:#b91c1c;--bc-soft:rgba(185,28,28,0.12)">peligro</span>
+      </div>
+      <p class="exp">Lista procesos (tasklist /v con detalle) y los mata por PID o por nombre de imagen (/im), con /f de fuerza.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CAMILO.bat, broma.bat, counter.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">systeminfo   ·   hostname   ·   whoami   ·   ver</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Información básica del equipo y de la sesión: inventario completo, nombre del equipo, usuario actual y versión corta de Windows.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat, ROYNER.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">ipconfig /all   ·   /flushdns   ·   /release   ·   /renew   ·   /displaydns</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Configuración de red completa (MAC, DHCP, DNS), vaciar la caché DNS, liberar y renovar la IP, y ver la caché de resoluciones.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">ping google.com -n 4   ·   ping -t</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Prueba de conectividad. En Windows -n 4 envía cuatro paquetes (por defecto ya son cuatro; en Linux el número va con -c) y -t repite sin parar hasta Ctrl+C.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EDWIN2.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">netstat -ano</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Conexiones de red con el PID del proceso dueño: -a todas, -n en números (sin resolver DNS) y -o el PID. Se filtra con find ESTABLISHED o findstr LISTENING.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, DANIEL.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">net user   ·   net localgroup   ·   net start</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Gestión de usuarios locales, grupos y servicios iniciados. Con net user nombre clave /add se crea un usuario y con /delete se borra.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> WinSysToolkit-ELKIN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">sc query type= service state= all</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Consulta los servicios de Windows. sc exige un ESPACIO antes de los signos igual: «state= all», nunca «state=all».</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> WinSysToolkit-ELKIN.bat, DANIEL.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">wmic logicaldisk get name, freespace, size   ·   wmic diskdrive get model, size, status</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Espacio libre y total por unidad lógica, e información física de los discos con su estado. Con «wmic path SoftwareLicensingService get OA3xOriginalProductKey» se extrae además la licencia OEM de Windows.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> IRAIDA.bat, ROYNER.bat, WinSysToolkit-ELKIN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">wmic memorychip get BankLabel, Capacity, Speed</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">WMIC consulta hardware y sistema por consola: RAM, discos, CPU, placa base, licencia. Está obsoleto en Windows 11 y Microsoft pide migrar a PowerShell/Get-CimInstance.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JUANDIEGO-AUTO.bat, ROYNER.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">winget install --id Git.Git --silent   ·   winget upgrade --all</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">El gestor de paquetes de Windows: instala y actualiza programas sin descargar instaladores a mano. winget list --upgrade-available lista lo actualizable.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> YORMAN.bat, CRISTIAN.bat, JEINER.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">where git &gt;nul 2&gt;&amp;1</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Busca un ejecutable en el PATH (como which en Linux). Con if %errorlevel%==0 sirve para verificar si algo está instalado.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> YORMAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">shutdown.exe -s -t 90 -c "Saludos chao"</code>
+        <span class="badge" style="--bc:#b91c1c;--bc-soft:rgba(185,28,28,0.12)">peligro</span>
+      </div>
+      <p class="exp">Apaga el equipo en 90 segundos con un mensaje: -s apagar (-r reiniciar), -t segundos de espera, -c comentario en pantalla.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> EjemplosBatch.bat, taller</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">shutdown -a</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">ABORTA un apagado programado. Es el salvavidas si el comando anterior se ejecutó por error.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> taller baterías 1</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">powercfg /batteryreport /output "bateria.html"</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Genera el informe de batería en HTML: ciclos de carga y comparación entre capacidad de diseño y capacidad real de carga.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> CAMILO.bat, JULIAN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">powercfg /energy   ·   powercfg /list</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">/energy analiza 60 segundos y reporta problemas de eficiencia energética; /list muestra los esquemas de energía disponibles.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JULIAN.bat, DANIEL.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">powercfg -attributes 2a737441-... 48352abd-... -ATTRIB_HIDE</code>
+        <span class="badge" style="--bc:#b91c1c;--bc-soft:rgba(185,28,28,0.12)">peligro</span>
+      </div>
+      <p class="exp">Muestra u oculta una opción avanzada de energía que el panel no expone, cambiando sus atributos con los GUID de subgrupo y de opción. Antes se hacía a mano en REGEDIT (valor 2 en ATRIBUTES).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> taller baterías 1</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">sfc /scannow   ·   DISM /Online /Cleanup-Image /RestoreHealth   ·   chkdsk C: /scan</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Reparación del sistema: sfc repara archivos del sistema, DISM repara la imagen de la que se abastece sfc (por eso va primero) y chkdsk /scan revisa el disco en caliente sin reiniciar.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, JULIAN.bat, EDWIN2.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">reg add "HKCU\...\Advanced" /v HideIcons /t REG_DWORD /d 1 /f</code>
+        <span class="badge" style="--bc:#b91c1c;--bc-soft:rgba(185,28,28,0.12)">peligro</span>
+      </div>
+      <p class="exp">Modifica el registro de Windows: /v nombre del valor, /t tipo, /d dato y /f fuerza sin preguntar. reg query lee valores.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> broma.bat, counter.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">driverquery /v   ·   cmdkey /list   ·   runas /user:sistemas cmd   ·   icacls hola.txt</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Inventario de controladores, credenciales guardadas, ejecución con otro usuario y permisos (ACL) de un archivo. icacls muestra (I) heredado, (F) control total, (RX) lectura y ejecución; se otorgan con /grant y se quitan con /remove o /deny.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> DANIEL.bat, taller baterías 1</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">curl wttr.in/cucuta   ·   rundll32 user32.dll,UpdatePerUserSystemParameters   ·   mshta "app.hta"</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Descargar por HTTP (curl viene incluido en Windows 10/11), refrescar la configuración visual tras cambiar el registro, y ejecutar aplicaciones HTA.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, broma.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#475569;--accent-soft:rgba(71,85,105,0.09);--accent-mid:rgba(71,85,105,0.35);--accent-dark:rgb(56,68,87)">
+      <div class="card-top">
+        <code class="sintaxis">taskschd.msc   ·   start rundll32 user32.dll MessageBeep</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Abrir el Programador de tareas y reproducir el sonido de notificación del sistema (truco del segundo ejercicio del taller).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> taller baterías 1</p>
+      
+    </div>
+    
+  </article>
+
+  <article class="seccion" style="--accent:#0369a1;--accent-soft:rgba(3,105,161,0.1);--accent-mid:rgba(3,105,161,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">C</div>
+      <div class="sec-txt">
+        <h2>Red: comandos de los talleres</h2>
+        <p>Los comandos de auditoría y configuración de red que aparecen en el Taller No 4 y se combinan con los .bat de diagnóstico.</p>
+      </div>
+      <div class="sec-count"><b>12</b><span>sintaxis</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    <div class="card" style="--accent:#0369a1;--accent-soft:rgba(3,105,161,0.09);--accent-mid:rgba(3,105,161,0.35);--accent-dark:rgb(5,83,129)">
+      <div class="card-top">
+        <code class="sintaxis">netstat -a   ·   -o   ·   -ano   ·   -b</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Todas las conexiones y puertos con su estado; -o añade el PID dueño, -n evita resolver nombres (más rápido y fácil de filtrar) y -b muestra el ejecutable asociado, lo que exige permisos de administrador.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, DANIEL.bat, WinSysToolkit-ELKIN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0369a1;--accent-soft:rgba(3,105,161,0.09);--accent-mid:rgba(3,105,161,0.35);--accent-dark:rgb(5,83,129)">
+      <div class="card-top">
+        <code class="sintaxis">nslookup www.google.com</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Consulta el DNS y devuelve la IP del dominio. Un mismo dominio puede devolver IPs distintas porque hay varios servidores.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> taller redes</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0369a1;--accent-soft:rgba(3,105,161,0.09);--accent-mid:rgba(3,105,161,0.35);--accent-dark:rgb(5,83,129)">
+      <div class="card-top">
+        <code class="sintaxis">nslookup -type=mx www.ufps.edu.co   ·   -type=ptr</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Consulta los registros MX (servidores de correo del dominio) y los PTR (resolución inversa hostname ↔ IP).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> taller redes</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0369a1;--accent-soft:rgba(3,105,161,0.09);--accent-mid:rgba(3,105,161,0.35);--accent-dark:rgb(5,83,129)">
+      <div class="card-top">
+        <code class="sintaxis">arp -a   ·   arp -a -v   ·   arp -s IP MAC</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Muestra la tabla ARP (qué IP local corresponde a qué MAC, con tipo DINÁMICO o ESTÁTICO) y permite fijar una entrada manual.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> taller redes</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0369a1;--accent-soft:rgba(3,105,161,0.09);--accent-mid:rgba(3,105,161,0.35);--accent-dark:rgb(5,83,129)">
+      <div class="card-top">
+        <code class="sintaxis">net view   ·   net view \\NOMBREPC /ALL</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Lista los equipos visibles en la red local y los recursos compartidos de uno concreto. Falla con error 6118 cuando el descubrimiento está bloqueado o la red es PÚBLICA.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> taller redes</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0369a1;--accent-soft:rgba(3,105,161,0.09);--accent-mid:rgba(3,105,161,0.35);--accent-dark:rgb(5,83,129)">
+      <div class="card-top">
+        <code class="sintaxis">tracert www.google.com   ·   pathping www.google.com</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">tracert muestra cada salto (hop) de la ruta con su IP y tiempo; pathping combina ping y tracert y además mide la pérdida de paquetes por nodo (más lento).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> taller redes</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0369a1;--accent-soft:rgba(3,105,161,0.09);--accent-mid:rgba(3,105,161,0.35);--accent-dark:rgb(5,83,129)">
+      <div class="card-top">
+        <code class="sintaxis">netsh interface show interface</code>
+        <span class="badge" style="--bc:#0f766e;--bc-soft:rgba(15,118,110,0.12)">base</span>
+      </div>
+      <p class="exp">Estado de todas las interfaces de red: nombre, si está conectada y su modo. netsh sin argumentos entra a su propio entorno interactivo (netsh&gt;).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, WinSysToolkit-ELKIN.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0369a1;--accent-soft:rgba(3,105,161,0.09);--accent-mid:rgba(3,105,161,0.35);--accent-dark:rgb(5,83,129)">
+      <div class="card-top">
+        <code class="sintaxis">netsh interface ipv4 set address "Ethernet" source=static address=192.168.1.6 mask=255.255.255.0 gateway=192.168.1.1</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Configura IP estática. Respeta los espacios antes de los signos =: netsh los exige. Para volver a DHCP se usa el mismo comando terminando en «dhcp».</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> JORGE.bat, EjemplosBatch.bat</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0369a1;--accent-soft:rgba(3,105,161,0.09);--accent-mid:rgba(3,105,161,0.35);--accent-dark:rgb(5,83,129)">
+      <div class="card-top">
+        <code class="sintaxis">netsh interface ipv4 set dnsservers "Ethernet" static address=8.8.8.8 primary</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Fija el DNS primario; con add dnsservers ... index=2 se agrega uno secundario y con «dhcp» vuelve a automático.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> taller redes</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0369a1;--accent-soft:rgba(3,105,161,0.09);--accent-mid:rgba(3,105,161,0.35);--accent-dark:rgb(5,83,129)">
+      <div class="card-top">
+        <code class="sintaxis">netsh advfirewall firewall add rule name="Puerto TCP 443" dir=in action=allow protocol=TCP localport=443</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Crea una regla de firewall para abrir un puerto: action=allow para abrir, dir=in entrada (dir=out salida). Con action=block se cierra y con delete rule name=... se elimina.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> taller redes, ROYNER.bat</p>
+      <p class="aviso"><span class="aviso-ico">!</span> Si creas otra regla con el mismo nombre, Windows añade una nueva en vez de reemplazarla: borra la anterior primero.</p>
+    </div>
+
+    <div class="card" style="--accent:#0369a1;--accent-soft:rgba(3,105,161,0.09);--accent-mid:rgba(3,105,161,0.35);--accent-dark:rgb(5,83,129)">
+      <div class="card-top">
+        <code class="sintaxis">netsh wlan show wlanreport</code>
+        <span class="badge" style="--bc:#4338ca;--bc-soft:rgba(67,56,202,0.12)">avanzado</span>
+      </div>
+      <p class="exp">Genera un informe del WiFi en HTML, XML y CAB: consulta NCSI (conectividad), NDIS (controlador), EAP (autenticación) y WCM (gestión de conexiones).</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> taller redes</p>
+      
+    </div>
+
+    <div class="card" style="--accent:#0369a1;--accent-soft:rgba(3,105,161,0.09);--accent-mid:rgba(3,105,161,0.35);--accent-dark:rgb(5,83,129)">
+      <div class="card-top">
+        <code class="sintaxis">nmap -sVC -O 192.168.20.72</code>
+        <span class="badge" style="--bc:#b91c1c;--bc-soft:rgba(185,28,28,0.12)">peligro</span>
+      </div>
+      <p class="exp">Herramienta externa de escaneo: -sV detecta servicios y versiones, -sC ejecuta scripts básicos y -O identifica el sistema operativo. Se usa para verificar que las reglas de firewall funcionan.</p>
+      <p class="origen"><span class="origen-lbl">Dónde verlo</span> taller redes</p>
+      
+    </div>
+    
+  </article>
+
+  <article class="seccion" style="--accent:#0f766e;--accent-soft:rgba(15,118,110,0.1);--accent-mid:rgba(15,118,110,0.3)">
+    <header class="sec-head">
+      <div class="sec-num">D</div>
+      <div class="sec-txt">
+        <h2>Chuletas de referencia rápida</h2>
+        <p>Las tablas que conviene tener a mano: escapes de caracteres, códigos de color, comparadores y la lista mínima que exige el taller.</p>
+      </div>
+      <div class="sec-count"><b>4</b><span>tablas</span></div>
+    </header>
+    <div class="regla"></div>
+    
+    
+  <div class="tabla-wrap" style="--accent:#0f766e">
+    <p class="tabla-tit">Caracteres que hay que escapar con ^</p>
+    <table>
+      <thead><tr><th>Carácter</th><th>Significado normal</th><th>Cómo imprimirlo o usarlo literal</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">^</td><td>Escape: neutraliza el carácter siguiente</td><td>^^</td></tr><tr><td class="mono">&amp;</td><td>Separador de comandos</td><td>^&amp;</td></tr><tr><td class="mono">|</td><td>Tubería</td><td>^|</td></tr><tr><td class="mono">&lt;  &gt;</td><td>Redirección de entrada y salida</td><td>^&lt;   ^&gt;</td></tr><tr><td class="mono">(  )</td><td>Agrupación de bloques</td><td>^(   ^)</td></tr><tr><td class="mono">%</td><td>Inicio de variable</td><td>%%</td></tr><tr><td class="mono">-&gt;</td><td>Flecha leída como redirección</td><td>-^&gt;</td></tr><tr><td class="mono">"</td><td>Comillas: se imprimen tal cual</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tabla-wrap" style="--accent:#0f766e">
+    <p class="tabla-tit">Códigos de color de la consola</p>
+    <table>
+      <thead><tr><th>Código</th><th>Fondo</th><th>Texto</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">0A</td><td>Negro</td><td>Verde claro (clásico Matrix)</td></tr><tr><td class="mono">1F</td><td>Azul</td><td>Blanco brillante</td></tr><tr><td class="mono">4F</td><td>Rojo</td><td>Blanco brillante</td></tr><tr><td class="mono">06</td><td>Negro</td><td>Amarillo</td></tr><tr><td class="mono">2F / 4E / 5A</td><td>Verde / Rojo / Púrpura</td><td>Blanco / Amarillo / Verde claro</td></tr><tr><td class="mono">(sin argumentos)</td><td>Restablece negro</td><td>Restablece blanco</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tabla-wrap" style="--accent:#0f766e">
+    <p class="tabla-tit">Comparadores y verificaciones</p>
+    <table>
+      <thead><tr><th>Sintaxis</th><th>Qué comprueba</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">if "%a%"=="%b%"</td><td>Igualdad de texto (siempre entre comillas)</td></tr><tr><td class="mono">if /i "a"=="A"</td><td>Igualdad sin distinguir mayúsculas</td></tr><tr><td class="mono">if not ...</td><td>Niega cualquier condición</td></tr><tr><td class="mono">EQU / NEQ</td><td>Igual / distinto (numérico)</td></tr><tr><td class="mono">LSS / LEQ</td><td>Menor / menor o igual</td></tr><tr><td class="mono">GTR / GEQ</td><td>Mayor / mayor o igual</td></tr><tr><td class="mono">if exist "ruta"</td><td>Existe archivo o carpeta</td></tr><tr><td class="mono">if exist "ruta\"</td><td>Existe y es una carpeta</td></tr><tr><td class="mono">if errorlevel N</td><td>errorlevel mayor o igual que N</td></tr><tr><td class="mono">if %errorlevel%==0</td><td>El comando anterior terminó bien</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tabla-wrap" style="--accent:#0f766e">
+    <p class="tabla-tit">Lista mínima del Taller No 5</p>
+    <table>
+      <thead><tr><th>Comando</th><th>Para qué</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">ECHO / @ECHO OFF</td><td>Imprimir texto / apagar el eco</td></tr><tr><td class="mono">REM o ::</td><td>Comentarios</td></tr><tr><td class="mono">MKDIR / RMDIR</td><td>Crear y borrar directorios</td></tr><tr><td class="mono">DEL / COPY</td><td>Borrar y copiar archivos</td></tr><tr><td class="mono">TITLE / COLOR</td><td>Título y colores de la ventana</td></tr><tr><td class="mono">PAUSE / PAUSE &gt; NUL</td><td>Pausa con y sin mensaje</td></tr><tr><td class="mono">ECHO.</td><td>Línea en blanco</td></tr><tr><td class="mono">SET / SET /a / SET /p</td><td>Declarar, calcular y leer del teclado</td></tr><tr><td class="mono">EXIT  0 / 1</td><td>Cerrar con salida correcta o incorrecta</td></tr>
+      </tbody>
+    </table>
+  </div>
+  </article>
+
+
+</body>
+</html>

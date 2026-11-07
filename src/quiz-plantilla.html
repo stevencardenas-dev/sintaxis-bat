@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz · Sintaxis únicas de .BAT</title>
+<style>
+__FUENTES__
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  :root {
+    --acento: #2f7de1;
+    --fondo: #060d16;
+    --linea: rgba(255,255,255,.09);
+    --txt: #e7eef7;
+    --dim: #8fa3ba;
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    min-height: 100%;
+    background:
+      radial-gradient(1100px 620px at 12% -12%, #14273d 0%, rgba(6,13,22,0) 62%),
+      radial-gradient(900px 620px at 92% 108%, #0d2136 0%, rgba(6,13,22,0) 60%),
+      var(--fondo);
+    color: var(--txt);
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 18px 40px;
+  }
+  .barra-progreso {
+    position: fixed; top: 0; left: 0; right: 0; height: 3px;
+    background: rgba(255,255,255,.06); z-index: 10;
+  }
+  .barra-progreso i {
+    display: block; height: 100%; width: 0;
+    background: var(--acento);
+    transition: width .35s ease, background .35s ease;
+  }
+  main { width: min(940px, 100%); display: flex; flex-direction: column; gap: 18px; }
+
+  .cabecera {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; padding: 0 4px; min-height: 34px;
+  }
+  .izq { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .marca {
+    font-size: 12px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--dim); font-weight: 600;
+  }
+  .marca b { color: var(--txt); letter-spacing: .04em; }
+  .cat-activa {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12.5px; font-weight: 600; color: #cadcee;
+    border: 1px solid var(--linea); border-radius: 999px; padding: 4px 12px;
+    background: rgba(255,255,255,.03);
+  }
+  .cat-activa i { width: 8px; height: 8px; border-radius: 50%; background: var(--acento); }
+  .contador {
+    font-variant-numeric: tabular-nums; font-size: 13px; color: var(--dim);
+    background: rgba(255,255,255,.04); border: 1px solid var(--linea);
+    border-radius: 999px; padding: 5px 13px; white-space: nowrap;
+  }
+  .volver {
+    font: inherit; font-size: 12.5px; font-weight: 600;
+    color: #b9cbe0; background: rgba(255,255,255,.03);
+    border: 1px solid var(--linea); border-radius: 999px;
+    padding: 6px 14px; cursor: pointer; transition: background .15s, border-color .15s;
+  }
+  .volver:hover { background: rgba(255,255,255,.08); border-color: #3a5470; color: #fff; }
+  kbd {
+    display: inline-block; margin-left: 9px; vertical-align: middle;
+    font-family: 'JetBrains Mono', ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 10px; font-weight: 700; line-height: 1;
+    padding: 4px 6px; border-radius: 5px;
+    border: 1px solid rgba(255,255,255,.24);
+    background: rgba(255,255,255,.11); color: #dce9f7;
+  }
+  .btn.primario kbd { border-color: rgba(10,22,34,.2); background: rgba(10,22,34,.07); color: #0a1622; }
+  .btn[disabled] kbd { opacity: .7; }
+  .volver kbd { margin-left: 7px; font-size: 9.5px; }
+
+  .buscador {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-radius: 14px;
+    border: 1px solid var(--linea); background: rgba(255,255,255,.03);
+    transition: border-color .15s, background .15s;
+  }
+  .buscador:focus-within { border-color: #3d5a78; background: rgba(255,255,255,.055); }
+  .buscador .lupa { color: var(--dim); flex: none; display: block; }
+  .buscador input {
+    flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
+    font: inherit; font-size: 14.5px; color: var(--txt);
+  }
+  .buscador input::placeholder { color: #6d839b; }
+  .buscador kbd { margin-left: 0; }
+  .pista { margin: -6px 4px 0; font-size: 11.5px; color: #647a92; letter-spacing: .03em; }
+  .pista kbd { margin: 0 2px; font-size: 9.5px; }
+  .sin-resultados { margin: 0 4px; font-size: 13px; color: var(--dim); }
+  .grupo.sel, .todas.sel {
+    border-color: var(--c);
+    box-shadow: inset 0 0 0 1px var(--c);
+  }
+  .todas.sel { --c: #5b90c9; }
+  .grupo.sel { background: rgba(255,255,255,.075); }
+
+  /* ---------- inicio ---------- */
+  .inicio { display: flex; flex-direction: column; gap: 16px; animation: aparecer .25s ease both; }
+  .inicio h1 { margin: 4px 0 0; font-size: clamp(24px, 3.6vw, 32px); letter-spacing: -.02em; }
+  .inicio .sub { margin: 0; color: var(--dim); font-size: 15px; }
+  .todas {
+    display: flex; align-items: center; gap: 16px; width: 100%; text-align: left;
+    padding: 20px 22px; border-radius: 16px; cursor: pointer; font: inherit;
+    color: var(--txt); border: 1px solid #2a4a6e;
+    background: linear-gradient(120deg, rgba(47,125,225,.22), rgba(47,125,225,.05));
+    transition: border-color .15s, background .15s;
+  }
+  .todas:hover { border-color: #3f6b9c; background: linear-gradient(120deg, rgba(47,125,225,.3), rgba(47,125,225,.08)); }
+  .todas .t-txt { font-weight: 700; font-size: 16px; }
+  .todas .t-sub { flex: 1; font-size: 12.5px; color: #b7cde4; }
+  .todas .t-flecha { font-size: 18px; color: #a8cdf5; }
+  .grupos { display: grid; grid-template-columns: repeat(auto-fill, minmax(262px, 1fr)); gap: 12px; }
+  .grupo {
+    display: flex; align-items: center; gap: 12px; text-align: left;
+    padding: 15px 17px; border-radius: 14px; cursor: pointer; font: inherit;
+    color: var(--txt); border: 1px solid var(--linea);
+    background: rgba(255,255,255,.028);
+    transition: background .15s, border-color .15s, transform .12s;
+  }
+  .grupo:hover { background: rgba(255,255,255,.06); border-color: #34506d; transform: translateY(-1px); }
+  .grupo i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); flex: none; }
+  .grupo .g-nombre { flex: 1; font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+  .grupo .g-cuenta { font-size: 11.5px; color: var(--dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  /* ---------- tarjeta ---------- */
+  .tarjeta {
+    position: relative;
+    background: linear-gradient(180deg, #101e2e 0%, #0b1725 100%);
+    border: 1px solid var(--linea);
+    border-radius: 22px;
+    padding: 34px 38px 28px;
+    box-shadow: 0 34px 90px -40px #000, inset 0 1px 0 rgba(255,255,255,.05);
+    overflow: hidden;
+    animation: aparecer .2s ease both;
+  }
+  .tarjeta::before {
+    content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 4px;
+    background: var(--acento); transition: background .35s ease;
+  }
+  @keyframes aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .fila {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 20px;
+  }
+  .etiqueta {
+    font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--dim); font-weight: 600;
+  }
+  .badge {
+    font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase;
+    font-weight: 700; padding: 5px 11px; border-radius: 999px;
+    border: 1px solid currentColor;
+  }
+  .badge[data-tipo="base"] { color: #7dd3fc; background: rgba(125,211,252,.10); }
+  .badge[data-tipo="avanzado"] { color: #c4b5fd; background: rgba(196,181,253,.10); }
+  .badge[data-tipo="peligro"] { color: #fda4af; background: rgba(253,164,175,.10); }
+  .badge[data-tipo="trampa"] { color: #fcd34d; background: rgba(252,211,77,.10); }
+
+  .desc {
+    margin: 0 0 24px;
+    font-size: 19.5px; line-height: 1.55; letter-spacing: -0.005em;
+    color: #dce7f4; max-width: 66ch;
+  }
+  .zona { min-height: 152px; display: flex; flex-direction: column; justify-content: center; }
+  .pendiente {
+    border: 1.5px dashed rgba(255,255,255,.14);
+    border-radius: 14px; padding: 34px 20px; text-align: center;
+    color: #6f849c; font-size: 14px; letter-spacing: .04em;
+    background: rgba(255,255,255,.015);
+  }
+  .resp { display: flex; flex-direction: column; gap: 14px; }
+  .rotulo {
+    font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--dim); font-weight: 700;
+  }
+  pre.codigo {
+    margin: 0; padding: 18px 20px;
+    background: #06111c; border: 1px solid rgba(255,255,255,.10);
+    border-left: 3px solid var(--acento);
+    border-radius: 12px; overflow-x: auto;
+    font-family: 'JetBrains Mono', ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Courier New", monospace;
+    font-size: 14.5px; line-height: 1.6; color: #d8ecff;
+    white-space: pre; tab-size: 4;
+  }
+  .pistas { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .chip {
+    font-size: 11.5px; font-weight: 600; color: #fff;
+    background: var(--acento); padding: 5px 12px; border-radius: 999px;
+  }
+  .ver { font-size: 12.5px; color: var(--dim); }
+  .ver b { color: #c8d8e9; font-weight: 600; }
+
+  .acciones { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+  .btn {
+    font: inherit; font-size: 14.5px; font-weight: 600; letter-spacing: .01em;
+    padding: 13px 26px; border-radius: 12px; cursor: pointer;
+    border: 1px solid #2b4056; background: rgba(255,255,255,.03); color: #cfdcea;
+    transition: background .15s ease, border-color .15s ease, transform .08s ease, opacity .15s ease;
+  }
+  .btn:hover { background: rgba(255,255,255,.07); border-color: #3a5470; }
+  .btn:active { transform: translateY(1px); }
+  .btn.primario { background: #eef5fd; border-color: #eef5fd; color: #0a1622; }
+  .btn.primario:hover { background: #fff; border-color: #fff; }
+  .btn[disabled] { opacity: .38; cursor: default; transform: none; }
+  .btn[disabled]:hover { background: rgba(255,255,255,.03); border-color: #2b4056; }
+  .btn.primario[disabled]:hover { background: #eef5fd; border-color: #eef5fd; }
+
+  .fin { text-align: center; padding: 58px 38px; }
+  .fin h2 { margin: 0 0 12px; font-size: 26px; letter-spacing: -.015em; }
+  .fin p { margin: 0 0 26px; color: var(--dim); font-size: 15px; line-height: 1.6; }
+  .fin .acciones { justify-content: center; margin-top: 0; }
+
+  .pie {
+    margin: 6px 4px 0; text-align: center;
+    font-size: 11.5px; color: #647a92; letter-spacing: .04em;
+  }
+
+  @media (max-width: 620px) {
+    body { padding: 24px 12px 32px; }
+    .tarjeta { padding: 26px 22px 22px; border-radius: 18px; }
+    .desc { font-size: 17px; }
+    pre.codigo { font-size: 13px; }
+    .acciones { flex-direction: column; }
+    .btn { width: 100%; }
+    .grupos { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="barra-progreso"><i id="barra"></i></div>
+
+<main>
+  <div class="cabecera">
+    <div class="izq">
+      <button type="button" class="volver" id="btn-volver" hidden>‹ Categorías <kbd>Esc</kbd></button>
+      <span class="marca">Sintaxis únicas <b>.BAT</b></span>
+      <span class="cat-activa" id="cat-activa" hidden><i id="cat-dot"></i><span id="cat-nombre"></span></span>
+    </div>
+    <span class="contador" id="contador">—</span>
+  </div>
+
+  <section class="inicio" id="inicio">
+    <h1>Elige una categoría</h1>
+    <p class="sub">Un cuestionario por categoría, o todas las sintaxis de corrido.</p>
+
+    <div class="buscador">
+      <svg class="lupa" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"></circle>
+        <path d="M20 20l-3.6-3.6"></path>
+      </svg>
+      <input id="q" type="search" placeholder="Buscar categoría…" autocomplete="off" spellcheck="false" aria-label="Buscar categoría">
+      <kbd>/</kbd>
+    </div>
+    <p class="pista"><kbd>↑</kbd><kbd>↓</kbd> para moverte · <kbd>Enter</kbd> para empezar · <kbd>Esc</kbd> limpia la búsqueda</p>
+
+    <button type="button" class="todas" id="btn-todas">
+      <span class="t-txt">Repasar todo</span>
+      <span class="t-sub" id="todas-sub"></span>
+      <span class="t-flecha">→</span>
+    </button>
+    <p class="sin-resultados" id="sin-resultados" hidden>Ninguna categoría coincide con la búsqueda.</p>
+    <div class="grupos" id="grupos"></div>
+  </section>
+
+  <section class="tarjeta" id="tarjeta" hidden>
+    <div class="fila">
+      <span class="etiqueta" id="etiqueta">Pregunta 1</span>
+      <span class="badge" id="badge" data-tipo="base">base</span>
+    </div>
+    <p class="desc" id="desc"></p>
+
+    <div class="zona">
+      <div class="pendiente" id="pendiente">Piensa la sintaxis… y luego descúbrela</div>
+      <div class="resp" id="resp" hidden>
+        <span class="rotulo">Sintaxis</span>
+        <pre class="codigo" id="codigo"></pre>
+        <div class="pistas">
+          <span class="chip" id="cat"></span>
+          <span class="ver" id="ver"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="acciones">
+      <button type="button" class="btn" id="btn-anterior">Anterior <kbd>↑</kbd></button>
+      <button type="button" class="btn primario" id="btn-mostrar">Mostrar respuesta <kbd>Espacio</kbd></button>
+      <button type="button" class="btn" id="btn-siguiente">Siguiente <kbd>↓</kbd></button>
+    </div>
+  </section>
+
+  <section class="tarjeta fin" id="fin" hidden>
+    <h2 id="fin-titulo">Terminaste</h2>
+    <p id="fin-txt"></p>
+    <div class="acciones">
+      <button type="button" class="btn primario" id="btn-repetir">Repetir <kbd>Enter</kbd></button>
+      <button type="button" class="btn" id="btn-elegir">Elegir otra categoría <kbd>Esc</kbd></button>
+    </div>
+  </section>
+
+  <p class="pie" id="pie"></p>
+</main>
+
+<script>
+  const GRUPOS = __DATOS__.map((g) => ({
+    ...g,
+    items: g.items.map((it) => ({ ...it, color: g.color, sec: g.sec }))
+  }));
+  const TODOS = GRUPOS.flatMap((g) => g.items);
+
+  const $ = (id) => document.getElementById(id);
+  const norm = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  let lista = [];
+  let i = 0;
+  let activo = null;
+  let sel = 0;
+  let visibles = [];
+  const cartas = [];
+
+  $('pie').textContent = TODOS.length + ' sintaxis únicas · ' + GRUPOS.length + ' categorías';
+  $('todas-sub').textContent = TODOS.length + ' sintaxis · ' + GRUPOS.length + ' categorías';
+  $('contador').textContent = GRUPOS.length + ' categorías';
+
+  GRUPOS.forEach((g, idx) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'grupo';
+    b.style.setProperty('--c', g.color);
+    const dot = document.createElement('i');
+    const nombre = document.createElement('span');
+    nombre.className = 'g-nombre';
+    nombre.textContent = g.sec;
+    const cuenta = document.createElement('span');
+    cuenta.className = 'g-cuenta';
+    cuenta.textContent = g.items.length + ' sintaxis';
+    b.append(dot, nombre, cuenta);
+    b.addEventListener('click', () => iniciar(idx));
+    $('grupos').appendChild(b);
+    cartas.push(b);
+  });
+
+  function iniciar(indice) {
+    activo = indice;
+    const grupo = indice >= 0 ? GRUPOS[indice] : null;
+    lista = grupo ? grupo.items : TODOS;
+    i = 0;
+
+    $('q').value = '';
+    filtrar();
+    $('q').blur();
+
+    $('inicio').hidden = true;
+    $('btn-volver').hidden = false;
+    $('cat-activa').hidden = !grupo;
+    if (grupo) {
+      $('cat-nombre').textContent = grupo.sec;
+      $('cat-dot').style.background = grupo.color;
+    }
+    pintar();
+  }
+
+  function pintar() {
+    const q = lista[i];
+    document.documentElement.style.setProperty('--acento', q.color);
+
+    $('contador').textContent = (i + 1) + ' / ' + lista.length;
+    $('barra').style.width = (i / lista.length * 100) + '%';
+    $('etiqueta').textContent = 'Pregunta ' + (i + 1);
+    $('badge').textContent = q.b;
+    $('badge').dataset.tipo = q.b;
+    $('desc').textContent = q.e;
+
+    $('pendiente').hidden = false;
+    $('resp').hidden = true;
+    $('codigo').textContent = q.c;
+    $('cat').textContent = q.sec;
+    $('ver').innerHTML = '';
+    const etiqueta = q.b === 'trampa' ? 'Corrección' : 'Dónde verlo';
+    const b = document.createElement('b');
+    b.textContent = etiqueta + ': ';
+    $('ver').append(b, document.createTextNode(q.d || '—'));
+
+    $('btn-mostrar').disabled = false;
+    $('btn-anterior').disabled = i === 0;
+    $('tarjeta').hidden = false;
+    $('fin').hidden = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function mostrar() {
+    if ($('btn-mostrar').disabled) return;
+    $('pendiente').hidden = true;
+    $('resp').hidden = false;
+    $('btn-mostrar').disabled = true;
+    $('barra').style.width = ((i + 1) / lista.length * 100) + '%';
+  }
+
+  function siguiente() {
+    if (i < lista.length - 1) {
+      i += 1;
+      pintar();
+      return;
+    }
+    $('barra').style.width = '100%';
+    $('contador').textContent = lista.length + ' / ' + lista.length;
+    $('tarjeta').hidden = true;
+    $('fin').hidden = false;
+    $('fin-titulo').textContent = activo >= 0 ? 'Terminaste «' + GRUPOS[activo].sec + '»' : 'Terminaste las ' + lista.length + ' preguntas';
+    $('fin-txt').textContent = 'Repasaste ' + lista.length + ' sintaxis. ¿Otra vuelta?';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function anterior() {
+    if (i > 0) {
+      i -= 1;
+      pintar();
+    }
+  }
+
+  function filtrar() {
+    const t = norm($('q').value.trim());
+    visibles = t ? [] : [{ el: $('btn-todas'), run: () => iniciar(-1) }];
+    let coincidencias = 0;
+    cartas.forEach((el, idx) => {
+      const ok = !t || norm(GRUPOS[idx].sec).includes(t);
+      el.hidden = !ok;
+      if (ok) {
+        coincidencias += 1;
+        visibles.push({ el, run: () => iniciar(idx) });
+      }
+    });
+    $('sin-resultados').hidden = coincidencias > 0;
+    sel = 0;
+    marcar();
+  }
+
+  function marcar() {
+    $('btn-todas').classList.remove('sel');
+    cartas.forEach((c) => c.classList.remove('sel'));
+    visibles.forEach((o, k) => o.el.classList.toggle('sel', k === sel));
+    const actual = visibles[sel];
+    if (actual) actual.el.scrollIntoView({ block: 'nearest' });
+  }
+
+  function mover(delta) {
+    if (!visibles.length) return;
+    sel = (sel + delta + visibles.length) % visibles.length;
+    marcar();
+  }
+
+  function irAInicio() {
+    lista = [];
+    i = 0;
+    activo = null;
+    $('q').value = '';
+    $('inicio').hidden = false;
+    $('tarjeta').hidden = true;
+    $('fin').hidden = true;
+    $('btn-volver').hidden = true;
+    $('cat-activa').hidden = true;
+    $('contador').textContent = GRUPOS.length + ' categorías';
+    $('barra').style.width = '0%';
+    document.documentElement.style.setProperty('--acento', '#2f7de1');
+    filtrar();
+    $('q').focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  $('btn-todas').addEventListener('click', () => iniciar(-1));
+  $('btn-mostrar').addEventListener('click', mostrar);
+  $('btn-siguiente').addEventListener('click', siguiente);
+  $('btn-anterior').addEventListener('click', anterior);
+  $('btn-volver').addEventListener('click', irAInicio);
+  $('btn-elegir').addEventListener('click', irAInicio);
+  $('btn-repetir').addEventListener('click', () => iniciar(activo));
+  $('q').addEventListener('input', filtrar);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
+    const enInicio = !$('inicio').hidden;
+    const enQuiz = !$('tarjeta').hidden;
+    const enFin = !$('fin').hidden;
+
+    if (enInicio) {
+      if (e.key === '/') {
+        e.preventDefault();
+        $('q').focus();
+        $('q').select();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        mover(1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        mover(-1);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (visibles[sel]) visibles[sel].run();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        $('q').value = '';
+        filtrar();
+        $('q').blur();
+      }
+      return;
+    }
+
+    if (enQuiz) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        irAInicio();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        siguiente();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        anterior();
+      } else if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        if ($('btn-mostrar').disabled) siguiente();
+        else mostrar();
+      }
+      return;
+    }
+
+    if (enFin) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        iniciar(activo);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        irAInicio();
+      }
+    }
+  });
+
+  filtrar();
+  if (window.matchMedia('(min-width: 720px)').matches) $('q').focus();
+</script>
+</body>
+</html>
