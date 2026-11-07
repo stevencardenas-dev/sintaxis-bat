@@ -18,7 +18,7 @@ Las dos entregas son autónomas:
 
 - El **PDF** lleva las fuentes incrustadas, así que se ve igual en cualquier lector y en
   cualquier sistema operativo.
-- El **HTML** lleva dentro los datos de las 178 preguntas y las fuentes (Inter y
+- El **HTML** lleva dentro los datos de las 179 preguntas y las fuentes (Inter y
   JetBrains Mono) codificadas en base64. Es un archivo único: se puede abrir con doble
   clic, sin servidor y sin conexión; también se puede enviar por correo o USB tal cual.
 

@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "quiz": "node src/quiz.mjs",
+    "probar": "node src/probar-verificador.mjs",
     "pdf": "node src/generar.mjs",
     "empaquetar": "node src/empaquetar.mjs"
   },

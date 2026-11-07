@@ -231,6 +231,13 @@ export const apendices = [
         e: 'Patrón de reporte: exportar el resultado a CSV sin cabecera de tipo, listo para abrir en Excel.',
         d: 'Taller baterías 1',
         b: 'avanzado'
+      },
+      {
+        cod: 'pwsh-correo',
+        c: 'powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0enviar-correo.ps1"\n$ClienteSMTP = New-Object Net.Mail.SmtpClient($ServidorSMTP, 587)\n$ClienteSMTP.EnableSsl = $true',
+        e: 'Enviar correo es el caso de dos piezas: un .bat no habla SMTP, así que llama a un .ps1 con -File, y dentro del script se crea el cliente SmtpClient en el puerto 587 con SSL. Escribe las dos piezas.',
+        d: 'Taller avanzado CORREO, Programador de tareas',
+        b: 'avanzado'
       }
     ]
   },

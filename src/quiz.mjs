@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { secciones } from './datos.mjs';
 import { seccionesB } from './datos-b.mjs';
 import { seccionesC, apendices } from './datos-c.mjs';
+import { reglas } from './verificador-reglas.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const raiz = path.resolve(__dirname, '..', '..');
@@ -17,7 +18,22 @@ const grupos = todas
     sec: s.titulo,
     id: s.id,
     color: s.color,
-    items: s.items.map((it) => ({ c: it.c, e: it.e, d: it.d, b: it.b || 'base' }))
+    items: s.items.map((it) => {
+      const regla = reglas[it.c] || (it.cod ? reglas[it.cod] : null);
+      const item = { c: it.c, e: it.e, d: it.d, b: it.b || 'base' };
+      if (regla) item.r = regla;
+
+      // Las familias separadas por «·» son alternativas: cualquiera vale.
+      const partes = it.c.split('·').map((p) => p.trim()).filter(Boolean);
+      if (!regla && partes.length > 1) {
+        const utiles = partes.filter((p) => !/→|\.\.\./.test(p));
+        if (utiles.length) item.alt = utiles;
+        else item.z = 1;
+      }
+      // Recetas con marcas de posición: no se pueden escribir literalmente.
+      if (!regla && !item.alt && /→|\.\.\./.test(it.c)) item.z = 1;
+      return item;
+    })
   }));
 
 const datos = JSON.stringify(grupos).replace(/</g, '\\u003c');
@@ -37,7 +53,14 @@ const cssFuentes = fuentes
   })
   .join('\n');
 
-const html = plantilla.replace('__FUENTES__', cssFuentes).replace('__DATOS__', datos);
+const verificador = fs.readFileSync(path.join(__dirname, 'verificador.js'), 'utf8');
+
+// Los reemplazos van con función: el código y los datos pueden contener «$»
+// y no queremos que se lean como patrones de replazo.
+const html = plantilla
+  .replace('__FUENTES__', () => cssFuentes)
+  .replace('__VERIFICADOR__', () => verificador)
+  .replace('__DATOS__', () => datos);
 
 const destino = path.join(raiz, 'Quiz-Sintaxis-BAT.html');
 fs.writeFileSync(destino, html, 'utf8');

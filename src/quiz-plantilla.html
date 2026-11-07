@@ -186,6 +186,41 @@ __FUENTES__
     color: #6f849c; font-size: 14px; letter-spacing: .04em;
     background: rgba(255,255,255,.015);
   }
+  /* ---------- entrada de respuesta ---------- */
+  .entrada { display: flex; flex-direction: column; gap: 12px; }
+  .entrada-caja { display: flex; flex-direction: column; gap: 6px; }
+  .campo-etiqueta {
+    font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--dim); font-weight: 700;
+  }
+  .campo {
+    width: 100%; resize: vertical; min-height: 46px; margin: 0;
+    background: #06111c; color: #d8ecff;
+    border: 1px solid rgba(255,255,255,.12); border-left: 3px solid var(--acento);
+    border-radius: 12px; padding: 11px 14px;
+    font-family: 'JetBrains Mono', ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Courier New", monospace;
+    font-size: 14.5px; line-height: 1.55; tab-size: 4;
+  }
+  .campo:focus {
+    outline: 0; border-color: var(--acento);
+    box-shadow: 0 0 0 3px rgba(47,125,225,.16);
+  }
+  .campo::placeholder { color: #5d728a; }
+  .entrada-fila { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .ayuda { font-size: 11.5px; color: #647a92; }
+  .dictamen {
+    margin: 0; font-size: 13.5px; line-height: 1.55;
+    border-radius: 12px; padding: 12px 15px;
+    border: 1px solid var(--linea); background: rgba(255,255,255,.02);
+  }
+  .dictamen b { display: block; font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 6px; }
+  .dictamen ul { margin: 0; padding-left: 18px; }
+  .dictamen li { margin: 3px 0; }
+  .dictamen p { margin: 8px 0 0; opacity: .85; }
+  .dictamen.ok { border-color: rgba(52,211,153,.45); background: rgba(52,211,153,.09); color: #b6f0d8; }
+  .dictamen.casi { border-color: rgba(252,211,77,.42); background: rgba(252,211,77,.08); color: #f0e0a6; }
+  .dictamen.mal { border-color: rgba(253,164,175,.38); background: rgba(253,164,175,.07); color: #f4c7ce; }
+
   .resp { display: flex; flex-direction: column; gap: 14px; }
   .rotulo {
     font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
@@ -288,6 +323,14 @@ __FUENTES__
     <p class="desc" id="desc"></p>
 
     <div class="zona">
+      <form class="entrada" id="entrada" autocomplete="off" hidden>
+        <div id="entrada-campos"></div>
+        <div class="entrada-fila">
+          <button type="submit" class="btn primario" id="btn-comprobar">Comprobar <kbd>Ctrl+↵</kbd></button>
+          <span class="ayuda" id="ayuda">No importan los espacios ni las mayúsculas.</span>
+        </div>
+        <div class="dictamen" id="dictamen" hidden></div>
+      </form>
       <div class="pendiente" id="pendiente">Piensa la sintaxis… y luego descúbrela</div>
       <div class="resp" id="resp" hidden>
         <span class="rotulo">Sintaxis</span>
@@ -318,6 +361,9 @@ __FUENTES__
   <p class="pie" id="pie"></p>
 </main>
 
+<script>
+__VERIFICADOR__
+</script>
 <script>
   const GRUPOS = __DATOS__.map((g) => ({
     ...g,
@@ -389,6 +435,7 @@ __FUENTES__
 
     $('pendiente').hidden = false;
     $('resp').hidden = true;
+    pintarEntrada(q);
     $('codigo').textContent = q.c;
     $('cat').textContent = q.sec;
     $('ver').innerHTML = '';
@@ -410,6 +457,145 @@ __FUENTES__
     $('resp').hidden = false;
     $('btn-mostrar').disabled = true;
     $('barra').style.width = ((i + 1) / lista.length * 100) + '%';
+  }
+
+  // ---------- entrada de respuesta ----------
+  let entrada = { plan: null, campos: [] };
+
+  function crecer(ta) {
+    ta.style.height = 'auto';
+    ta.style.height = Math.max(46, ta.scrollHeight) + 'px';
+  }
+
+  function nodo(etiqueta, texto) {
+    const el = document.createElement(etiqueta);
+    if (texto != null) el.textContent = texto;
+    return el;
+  }
+
+  function pintarEntrada(q) {
+    const plan = Verificador.plan(q);
+    const cont = $('entrada-campos');
+    const caja = $('dictamen');
+    cont.innerHTML = '';
+    caja.hidden = true;
+    caja.className = 'dictamen';
+    caja.textContent = '';
+    entrada = { plan, campos: [] };
+
+    if (plan.tipo === 'revelar') {
+      $('entrada').hidden = true;
+      $('pendiente').textContent = 'Esta entrada es una receta con marcas de posición: revísala con «Mostrar respuesta».';
+      return;
+    }
+
+    const multilinea = plan.tipo === 'bloque';
+    const defs = plan.tipo === 'campos'
+      ? plan.campos.map((c) => ({ rotulo: c.rotulo || 'Parte', alto: 2 }))
+      : [{
+          rotulo: multilinea
+            ? 'Escribe el bloque completo'
+            : (plan.tipo === 'requisitos' ? 'Línea completa' : 'Sintaxis'),
+          alto: multilinea ? Math.min(8, (q.c.match(/\n/g) || []).length + 2) : 2
+        }];
+
+    defs.forEach((def, k) => {
+      const cajaCampo = document.createElement('div');
+      cajaCampo.className = 'entrada-caja';
+      const lab = document.createElement('label');
+      lab.className = 'campo-etiqueta';
+      lab.textContent = def.rotulo;
+      lab.setAttribute('for', 'campo-' + k);
+      const ta = document.createElement('textarea');
+      ta.className = 'campo';
+      ta.id = 'campo-' + k;
+      ta.rows = def.alto;
+      ta.spellcheck = false;
+      ta.setAttribute('autocomplete', 'off');
+      ta.setAttribute('autocapitalize', 'off');
+      ta.setAttribute('autocorrect', 'off');
+      ta.placeholder = multilinea ? 'Una instrucción por línea…' : 'Escribe aquí…';
+      ta.addEventListener('input', () => crecer(ta));
+      ta.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey && !multilinea) {
+          e.preventDefault();
+          comprobar();
+        }
+      });
+      cajaCampo.append(lab, ta);
+      cont.appendChild(cajaCampo);
+      entrada.campos.push(ta);
+    });
+
+    $('entrada').hidden = false;
+    $('pendiente').textContent = plan.tipo === 'requisitos'
+      ? 'Escribe la línea completa: se corrige por piezas.'
+      : 'Piensa la sintaxis… y escríbela aquí.';
+    $('ayuda').textContent = plan.tipo === 'requisitos'
+      ? 'Cada pieza correcta suma.'
+      : 'No importan los espacios ni las mayúsculas.';
+
+    const primero = entrada.campos[0];
+    if (primero && window.matchMedia('(min-width: 720px)').matches) primero.focus();
+  }
+
+  function comprobar() {
+    if ($('entrada').hidden) return;
+    const q = lista[i];
+    const valores = entrada.campos.map((t) => t.value);
+    const r = Verificador.evaluar(q, valores);
+    const caja = $('dictamen');
+    const piezas = [];
+
+    if (r.estado === 'vacio') {
+      caja.className = 'dictamen casi';
+      caja.replaceChildren(nodo('b', 'Escribe algo primero'));
+      caja.hidden = false;
+      return;
+    }
+
+    if (r.tipo === 'campos' && r.detalles) {
+      r.detalles.forEach((d) => {
+        if (d.estado === 'correcto') {
+          piezas.push('✔ ' + d.rotulo);
+          return;
+        }
+        let falta = '';
+        if (d.faltan && d.faltan.length) falta = 'falta «' + d.faltan.join(' ') + '»';
+        else if (d.detalles) {
+          const pendientes = d.detalles.filter((x) => x.estado !== 'correcto').map((x) => x.texto);
+          falta = pendientes[0] || 'falta esa pieza';
+        }
+        piezas.push('✘ ' + d.rotulo + ': ' + (falta || 'no coincide'));
+      });
+    } else if (r.tipo === 'requisitos' && r.detalles) {
+      r.detalles.forEach((d) => piezas.push((d.estado === 'correcto' ? '✔ ' : '✘ ') + d.texto));
+    } else {
+      if (r.faltan && r.faltan.length) piezas.push('Te falta: ' + r.faltan.join(' '));
+      if (r.sobran && r.sobran.length) piezas.push('Te sobra: ' + r.sobran.join(' '));
+      (r.pistas || []).forEach((p) => piezas.push(p));
+    }
+
+    const titulo = r.estado === 'correcto'
+      ? 'Correcto'
+      : (r.estado === 'parcial'
+          ? 'Casi: ' + Math.round(r.puntaje * 100) + '% de las piezas'
+          : 'Todavía no');
+
+    caja.className = 'dictamen ' + (r.estado === 'correcto' ? 'ok' : (r.estado === 'parcial' ? 'casi' : 'mal'));
+    caja.replaceChildren(nodo('b', titulo));
+
+    if (piezas.length) {
+      const ul = document.createElement('ul');
+      piezas.forEach((p) => ul.appendChild(nodo('li', p)));
+      caja.appendChild(ul);
+    }
+    caja.hidden = false;
+
+    if (r.estado === 'correcto') {
+      caja.appendChild(nodo('p', 'Coincide con la sintaxis de la guía.'));
+      mostrar();
+    }
   }
 
   function siguiente() {
@@ -491,8 +677,23 @@ __FUENTES__
   $('btn-elegir').addEventListener('click', irAInicio);
   $('btn-repetir').addEventListener('click', () => iniciar(activo));
   $('q').addEventListener('input', filtrar);
+  $('entrada').addEventListener('submit', (e) => {
+    e.preventDefault();
+    comprobar();
+  });
 
   document.addEventListener('keydown', (e) => {
+    // Mientras se escribe en un campo, los atajos globales no aplican.
+    const t = e.target;
+    if (t && (t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && t !== $('q')))) {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        comprobar();
+      } else if (e.key === 'Escape') {
+        t.blur();
+      }
+      return;
+    }
     if (e.ctrlKey || e.altKey || e.metaKey) return;
     const enInicio = !$('inicio').hidden;
     const enQuiz = !$('tarjeta').hidden;
