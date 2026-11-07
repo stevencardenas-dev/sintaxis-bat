@@ -213,6 +213,12 @@ si('la arroba de silencio es opcional', () => {
 });
 
 // ---------- interfaz ----------
+si('los puntos suspensivos dentro de una frase no son un hueco', () => {
+  const prosa = { c: 'if /i "%respuesta%"=="S" (\n    echo Actualizando el sistema...\n    goto actualizar\n)' };
+  assert.equal(V.plan(prosa).tipo, 'bloque');
+  assert.equal(V.plan({ c: 'if errorlevel 1 ( ... ) else ( ... )' }).tipo, 'revelar');
+});
+
 si('los requisitos no se confunden con una línea', () => {
   const item = { c: 'x', r: { requisitos: [{ texto: 'a', re: 'a' }] } };
   assert.equal(V.plan(item).tipo, 'requisitos');

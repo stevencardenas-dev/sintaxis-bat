@@ -296,5 +296,158 @@ export const reglas = {
       { texto: 'Deben envolver toda la expresión', re: 'expresi[oó]n' },
       { texto: 'Lo relaciona con las rutas o los espacios', re: 'ruta|espacios' }
     ]
+  },
+
+  // ===== Recetas que antes solo se revelaban =====
+  // Se piden por requisitos: la respuesta modelo lleva «...» y no se puede
+  // comparar literalmente, pero sí comprobar que el guion tiene lo esencial.
+
+  'if errorlevel 1 ( ... ) else ( ... )': {
+    requisitos: [
+      { texto: 'Comprueba if errorlevel 1', re: 'if\\s+errorlevel\\s+1' },
+      { texto: 'Distingue la otra rama con else', re: '\\belse\\b' },
+      { texto: 'Agrupa cada rama entre paréntesis', re: '\\([\\s\\S]*\\)\\s*else\\s*\\(' }
+    ]
+  },
+
+  'for /f ... do set CPUL=%%A   →   echo !CPUL!%%': {
+    requisitos: [
+      { texto: 'Recorre la salida con for /f', re: 'for\\s+/f' },
+      { texto: 'Asigna con set y la variable del bucle', re: 'set\\s+\\w+\\s*=\\s*%%[a-z]' },
+      { texto: 'Imprime con expansión retardada !CPUL!', re: '![a-z_]\\w*!' },
+      { texto: 'Cierra con echo', re: 'echo' }
+    ]
+  },
+
+  ':AYUDA ... :FIN   +   goto AYUDA': {
+    requisitos: [
+      { texto: 'Define la etiqueta :AYUDA', re: ':ayuda' },
+      { texto: 'Define la etiqueta :FIN', re: ':fin' },
+      { texto: 'Salta a ella con goto AYUDA', re: 'goto\\s+:?ayuda' }
+    ]
+  },
+
+  ':while1 ... if %x% leq 8 ( ... ) ... goto :while1': {
+    requisitos: [
+      { texto: 'Abre el bucle con :while1', re: ':while1' },
+      { texto: 'Compara con if %x% leq 8', re: 'if\\s+%x%\\s+leq\\s+8' },
+      { texto: 'Vuelve con goto :while1', re: 'goto\\s+:while1' }
+    ]
+  },
+
+  ':estudio ... :descanso ... (sin goto final)': {
+    requisitos: [
+      { texto: 'Define la etiqueta :estudio', re: ':estudio' },
+      { texto: 'Define la etiqueta :descanso', re: ':descanso' },
+      { texto: 'Explica que sin goto se cae en la etiqueta siguiente', re: 'sin\\s+goto|cae|sigue|contin' }
+    ]
+  },
+
+  ':menu → cls → echo opciones → set /p → if → goto': {
+    requisitos: [
+      { texto: 'Abre con la etiqueta :menu', re: ':menu' },
+      { texto: 'Limpia la pantalla con cls', re: '\\bcls\\b' },
+      { texto: 'Lee la opción con set /p', re: 'set\\s+/p' },
+      { texto: 'Decide con if y salta con goto', re: 'if[\\s\\S]*goto' }
+    ]
+  },
+
+  '( echo ... & comando & echo ... ) > "%archivo%"': {
+    requisitos: [
+      { texto: 'Agrupa el bloque entre paréntesis', re: '\\([\\s\\S]*\\)' },
+      { texto: 'Encadena los comandos con &', re: '&' },
+      { texto: 'Redirige el conjunto a %archivo%', re: '\\)\\s*>\\s*"%archivo%"' }
+    ]
+  },
+
+  'set BAR=   →   for %%A in (1 2 3 ...) do ( set BAR=!BAR!# & cls & echo !BAR! )': {
+    requisitos: [
+      { texto: 'Inicializa BAR vacía', re: 'set\\s+BAR=' },
+      { texto: 'Crece dentro de un for %%A in (...)', re: 'for\\s+%%[a-z]\\s+in' },
+      { texto: 'Acumula con expansión retardada !BAR!', re: '!BAR!' },
+      { texto: 'Repinta la línea con cls', re: '\\bcls\\b' }
+    ]
+  },
+
+  'if exist "estado\\fondo_original.txt" ( ... ) else ( ... )': {
+    requisitos: [
+      { texto: 'Comprueba con if exist', re: 'if\\s+exist' },
+      { texto: 'Mira el archivo de estado fondo_original.txt', re: 'fondo_original\\.txt' },
+      { texto: 'Distingue las dos ramas con else', re: '\\belse\\b' }
+    ]
+  },
+
+  'fc viejo nuevo >nul   →   if errorlevel 1 ( avisar )': {
+    requisitos: [
+      { texto: 'Compara con fc', re: '\\bfc\\b' },
+      { texto: 'Silencia la salida con >nul', re: '>\\s*nul' },
+      { texto: 'Avisa con if errorlevel 1', re: 'if\\s+errorlevel\\s+1' }
+    ]
+  },
+
+  'set origen = C:\\Users\\...\\SO Sem 1': {
+    requisitos: [
+      { texto: 'Usa set', re: '\\bset\\b' },
+      { texto: 'Asigna la variable origen', re: 'origen\\s*=' },
+      { texto: 'Apunta a la carpeta SO Sem 1', re: 'so\\s+sem\\s+1' }
+    ]
+  },
+
+  'if exist %command% echo Compiling... [salto] else goto :error': {
+    requisitos: [
+      { texto: 'Comprueba if exist sobre %command%', re: 'if\\s+exist\\s+"?%command%"?' },
+      { texto: 'Avisa con echo', re: 'echo' },
+      { texto: 'Salta al error con goto :error', re: 'goto\\s+:error' }
+    ]
+  },
+
+  'if %opcion%==1 ...   (con opcion vacía)': {
+    requisitos: [
+      { texto: 'Compara %opcion% con 1', re: 'if\\s+"?%opcion%"?\\s*==\\s*"?1"?' },
+      { texto: 'Protege la comparación con comillas (o lo advierte)', re: '"%opcion%"|comillas|vac[ií]a' }
+    ]
+  },
+
+  'wmic /namespace:\\\\root\\SecurityCenter2 ...': {
+    requisitos: [
+      { texto: 'Consulta con wmic /namespace:', re: 'wmic\\s+/namespace:' },
+      { texto: 'Entra en SecurityCenter2', re: 'securitycenter2' },
+      { texto: 'Cierra la ruta con una barra', re: '\\\\' }
+    ]
+  },
+
+  'for ... do (  :: comentario  )': {
+    requisitos: [
+      { texto: 'Abre un bloque con for ... do (', re: 'for[\\s\\S]*do\\s*\\(' },
+      { texto: 'Escribe un comentario dentro', re: '::|rem' },
+      { texto: 'Señala que :: falla dentro del bloque', re: '::' }
+    ]
+  },
+
+  '... | Select-Object Id | Export-Csv -Path C:\\Hilos.csv -NoTypeInformation': {
+    requisitos: [
+      { texto: 'Selecciona Id con Select-Object', re: 'select-object\\s+id' },
+      { texto: 'Exporta con Export-Csv', re: 'export-csv' },
+      { texto: 'Escribe en C:\\Hilos.csv', re: 'hilos\\.csv' },
+      { texto: 'Omite la cabecera con -NoTypeInformation', re: '-notypeinformation' }
+    ]
+  },
+
+  'powercfg -attributes 2a737441-... 48352abd-... -ATTRIB_HIDE': {
+    requisitos: [
+      { texto: 'Usa powercfg -attributes', re: 'powercfg\\s+-attributes' },
+      { texto: 'Pasa los dos GUID', re: '2a737441[\\s\\S]*48352abd' },
+      { texto: 'Oculta la opción con -ATTRIB_HIDE', re: '-attrib_hide' }
+    ]
+  },
+
+  'reg add "HKCU\\...\\Advanced" /v HideIcons /t REG_DWORD /d 1 /f': {
+    requisitos: [
+      { texto: 'Escribe con reg add en HKCU', re: 'reg\\s+add\\s+"?hkcu' },
+      { texto: 'Crea el valor HideIcons con /v', re: '/v\\s+hideicons' },
+      { texto: 'Lo declara REG_DWORD con /t', re: '/t\\s+reg_dword' },
+      { texto: 'Le da el valor 1 con /d', re: '/d\\s+1' },
+      { texto: 'Fuerza sin preguntar con /f', re: '/f' }
+    ]
   }
 };

@@ -1,7 +1,7 @@
 # Sintaxis únicas de .BAT
 
 Material de estudio sobre la sintaxis de los archivos por lotes (`.bat`) de Windows,
-organizado en categorías. No necesita internet, instalación ni programas adicionales
+organizado por categorías. No necesita internet, instalación ni programas adicionales
 para usarse.
 
 Versión publicada: <https://stevencardenas-dev.github.io/sintaxis-bat/>
@@ -10,17 +10,21 @@ Versión publicada: <https://stevencardenas-dev.github.io/sintaxis-bat/>
 
 | Archivo | Qué es |
 |---|---|
-| `Guia-Sintaxis-BAT.pdf` | Guía de 38 páginas con las 178 sintaxis explicadas, por categorías (A4, lista para imprimir). |
-| `Quiz-Sintaxis-BAT.html` | Cuestionario interactivo, un recorrido por categoría o todas de corrido. |
+| `Guia-Sintaxis-BAT.pdf` | Guía de 50 páginas con 251 sintaxis explicadas en 26 categorías (A4, lista para imprimir). |
+| `Quiz-Sintaxis-BAT.html` | Cuestionario interactivo de 250 preguntas en 25 categorías, con previo, simulacro, práctica libre y progreso guardado. |
 | `src/` | El código que genera ambos entregables a partir de una sola fuente de datos. |
 
 Las dos entregas son autónomas:
 
 - El **PDF** lleva las fuentes incrustadas, así que se ve igual en cualquier lector y en
   cualquier sistema operativo.
-- El **HTML** lleva dentro los datos de las 179 preguntas y las fuentes (Inter y
+- El **HTML** lleva dentro los datos de las 250 preguntas y las fuentes (Inter y
   JetBrains Mono) codificadas en base64. Es un archivo único: se puede abrir con doble
   clic, sin servidor y sin conexión; también se puede enviar por correo o USB tal cual.
+
+La guía incluye una variante duplicada de una consulta que el cuestionario omite a
+propósito (`soloGuia`), por eso las cifras difieren en uno. La categoría «Chuletas de
+referencia rápida» solo tiene tablas y no genera preguntas.
 
 ## Cómo usarlo
 
@@ -37,22 +41,40 @@ Las dos entregas son autónomas:
 | Quiz | `Espacio` | Mostrar la respuesta (y avanzar si ya está mostrada) |
 | Quiz | `↓` `↑` | Siguiente / anterior pregunta |
 | Quiz | `Esc` | Volver a las categorías |
+| Práctica libre | `Ctrl+↵` | Comprobar lo escrito |
 | Final | `Enter` | Repetir el cuestionario |
 | Final | `Esc` | Elegir otra categoría |
+
+Además del recorrido por categorías, el inicio ofrece:
+
+- **Repasar todo** y **Repasar falladas**, con el progreso de cada categoría.
+- **Simulacro**: diez preguntas seguidas, sin pistas, con puntuación final.
+- **Práctica libre**: se pega cualquier comando o bloque y se compara con todo el curso,
+  con desglose de piezas, avisos de variables, cierre de paréntesis y sangría.
+- **Descargar resultados** cuando termina una ronda.
+
+El editor de respuestas ayuda mientras se escribe: cierra `(` y `"`, salta el cierre que
+ya existe, indenta al pulsar `Enter` dentro de un bloque, `Tab`/`Shift+Tab` mueven la
+sangría y un contador avisa si queda un paréntesis o una comilla abiertos.
 
 ## Estructura del código
 
 ```
 src/
-  datos.mjs             Secciones 01–07 (estructura, comentarios, ECHO, variables, …)
-  datos-b.mjs           Secciones 08–12 (GOTO, CALL, FOR, redirección, archivos)
-  datos-c.mjs           Secciones 13–14 y apéndices A–D
-  generar.mjs           Genera la guía HTML intermedia y el PDF con Chrome
-  guia.html             HTML intermedio del PDF (se regenera solo)
-  quiz-plantilla.html   Plantilla del cuestionario (CSS y JS)
-  quiz.mjs              Inyecta datos y fuentes y escribe el HTML del quiz
-  empaquetar.mjs        Comprime la carpeta en Sintaxis-BAT.zip (sin dependencias)
-  fuentes/              Inter y JetBrains Mono en woff2 (SIL Open Font License 1.1)
+  datos.mjs                Secciones 01–07 (estructura, comentarios, ECHO, variables, …)
+  datos-b.mjs              Secciones 08–12 (GOTO, CALL, FOR, redirección, archivos)
+  datos-c.mjs              Secciones 13–14 y apéndices A–D
+  datos-d.mjs              Secciones 16–23 (WMIC, certutil, consolas, previo, correo, …)
+  verificador.js           Motor de comparación por piezas y reglas de corrección
+  verificador-reglas.mjs   Casos que necesitan campos, alternativas o requisitos
+  probar-verificador.mjs   29 pruebas del motor y del modelo de respuestas
+  probar-limites.mjs       31 casos límite (equivalencias, tildes, familias, editor)
+  generar.mjs              Genera la guía HTML intermedia y el PDF con Chrome
+  guia.html                HTML intermedio del PDF (se regenera solo)
+  quiz-plantilla.html      Plantilla del cuestionario (CSS y JS)
+  quiz.mjs                 Inyecta datos y fuentes y escribe el HTML del quiz
+  empaquetar.mjs           Comprime la carpeta en Sintaxis-BAT.zip (sin dependencias)
+  fuentes/                 Inter y JetBrains Mono en woff2 (SIL Open Font License 1.1)
 ```
 
 Cualquier cambio de contenido se hace en `datos*.mjs` y se refleja en la guía y en el
@@ -65,13 +87,19 @@ Google Chrome instalado.
 
 ```bash
 npm install --no-audit --no-fund
-node src/quiz.mjs        # escribe Quiz-Sintaxis-BAT.html
-node src/generar.mjs     # escribe Guia-Sintaxis-BAT.pdf
-node src/empaquetar.mjs  # empaqueta todo en Sintaxis-BAT.zip
+npm run verificar        # motor + casos límite, sin navegador
+npm run quiz             # escribe Quiz-Sintaxis-BAT.html
+npm run pdf              # escribe Guia-Sintaxis-BAT.pdf
+npm run empaquetar       # empaqueta todo en Sintaxis-BAT.zip
 ```
 
 `generar.mjs` usa `puppeteer-core` con el Chrome ya instalado en el equipo; si Chrome
-está en otra ruta, se ajusta la constante correspondiente al inicio del archivo.
+está en otra ruta, se ajusta la constante `executablePath` al inicio del archivo.
+
+El flujo de GitHub Actions (`.github/workflows/verificar.yml`) corre `npm run verificar`
+y comprueba que el `Quiz-Sintaxis-BAT.html` commiteado coincide con la plantilla. El PDF
+no se regenera en CI porque necesita Chrome; se genera a mano y se sube en el mismo
+commit.
 
 ## Créditos y licencias
 

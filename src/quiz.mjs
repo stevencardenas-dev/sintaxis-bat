@@ -13,6 +13,9 @@ const raiz = path.resolve(__dirname, '..', '..');
 
 const todas = [...secciones, ...seccionesB, ...seccionesC, ...apendices, ...seccionesD];
 
+// «...» solo es un hueco cuando está suelto; dentro de una frase es prosa.
+const tieneMarcas = (texto) => /→|(^|\s)\.\.\.($|\s)/.test(texto);
+
 // Huella corta del texto canónico: si mañana se inserta una pregunta en medio de
 // una sección, el progreso guardado de las demás no se desplaza.
 function huella(texto) {
@@ -39,12 +42,12 @@ const grupos = todas
       // Las familias separadas por «·» son alternativas: cualquiera vale.
       const partes = it.c.split('·').map((p) => p.trim()).filter(Boolean);
       if (!regla && partes.length > 1) {
-        const utiles = partes.filter((p) => !/→|\.\.\./.test(p));
+        const utiles = partes.filter((p) => !tieneMarcas(p));
         if (utiles.length) item.alt = utiles;
         else item.z = 1;
       }
       // Recetas con marcas de posición: no se pueden escribir literalmente.
-      if (!regla && !item.alt && /→|\.\.\./.test(it.c)) item.z = 1;
+      if (!regla && !item.alt && tieneMarcas(it.c)) item.z = 1;
       return item;
     })
   }));

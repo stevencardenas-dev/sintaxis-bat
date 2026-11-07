@@ -1,0 +1,29 @@
+name: Verificar
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Dependencias
+        run: npm ci --no-audit --no-fund
+
+      - name: Motor y casos límite
+        run: npm run verificar
+
+      - name: Construir el cuestionario
+        run: npm run quiz
+
+      - name: El HTML publicado debe venir de la plantilla
+        run: git diff --exit-code -- Quiz-Sintaxis-BAT.html

@@ -6,9 +6,11 @@ import puppeteer from 'puppeteer-core';
 import { meta, partes, secciones as seccionesA } from './datos.mjs';
 import { seccionesB } from './datos-b.mjs';
 import { seccionesC, apendices } from './datos-c.mjs';
+import { seccionesD } from './datos-d.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const secciones = [...seccionesA, ...seccionesB, ...seccionesC, ...apendices];
+// Las secciones del previo van antes de las chuletas, que cierran la guía.
+const secciones = [...seccionesA, ...seccionesB, ...seccionesC, ...seccionesD, ...apendices];
 
 const esc = (s) =>
   String(s)
@@ -562,6 +564,9 @@ await pagina.emulateMediaType('print');
 const desbordes = await pagina.evaluate(() => {
   const malos = [];
   document.querySelectorAll('*').forEach((el) => {
+    // Lo que ya está recortado por diseño (portada, bloques de código) no cuenta.
+    const corte = getComputedStyle(el).overflowX;
+    if (corte === 'hidden' || corte === 'clip') return;
     if (el.scrollWidth > el.clientWidth + 2 && el.clientWidth > 0) {
       malos.push(el.tagName + '.' + el.className + ' (' + el.scrollWidth + '>' + el.clientWidth + ')');
     }
