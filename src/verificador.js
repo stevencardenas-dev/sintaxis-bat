@@ -135,8 +135,13 @@
     return '"' + partes.sort().join(' ') + '"';
   }
 
+  // La @ solo silencia el eco de esa línea: @pause y pause son lo mismo.
+  function quitarArroba(t) {
+    return t.charAt(0) === '@' && t.length > 1 ? t.slice(1) : t;
+  }
+
   function preparar(texto) {
-    return partirOperadores(tokenizar(texto)).map(ordenarOpciones);
+    return partirOperadores(tokenizar(texto)).map(quitarArroba).map(ordenarOpciones);
   }
 
   // Los modificadores de cmd (/f, -n, /im ...) se pueden escribir en cualquier

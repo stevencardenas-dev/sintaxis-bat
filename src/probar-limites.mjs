@@ -206,6 +206,12 @@ si('renombrar el for también renombra %%~nxF', () => {
   noCorrecto('for %%x in ("*.txt") do echo %%~nxf', esperado);
 });
 
+si('la arroba de silencio es opcional', () => {
+  correcto('pause', '@pause');
+  correcto('echo off', '@echo off');
+  noCorrecto('pause > null', '@pause >nul');
+});
+
 // ---------- interfaz ----------
 si('los requisitos no se confunden con una línea', () => {
   const item = { c: 'x', r: { requisitos: [{ texto: 'a', re: 'a' }] } };
