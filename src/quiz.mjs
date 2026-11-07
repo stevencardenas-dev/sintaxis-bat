@@ -5,12 +5,24 @@ import { fileURLToPath } from 'node:url';
 import { secciones } from './datos.mjs';
 import { seccionesB } from './datos-b.mjs';
 import { seccionesC, apendices } from './datos-c.mjs';
+import { seccionesD } from './datos-d.mjs';
 import { reglas } from './verificador-reglas.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const raiz = path.resolve(__dirname, '..', '..');
 
-const todas = [...secciones, ...seccionesB, ...seccionesC, ...apendices];
+const todas = [...secciones, ...seccionesB, ...seccionesC, ...apendices, ...seccionesD];
+
+// Huella corta del texto canónico: si mañana se inserta una pregunta en medio de
+// una sección, el progreso guardado de las demás no se desplaza.
+function huella(texto) {
+  let h = 2166136261;
+  for (let k = 0; k < texto.length; k++) {
+    h ^= texto.charCodeAt(k);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0).toString(36);
+}
 
 const grupos = todas
   .filter((s) => (s.items || []).length)
@@ -21,7 +33,7 @@ const grupos = todas
     items: s.items.map((it, idx) => {
       const regla = reglas[it.c] || (it.cod ? reglas[it.cod] : null);
       // Id estable: el progreso guardado no depende del texto de la respuesta.
-      const item = { id: s.id + '-' + (idx + 1), c: it.c, e: it.e, d: it.d, b: it.b || 'base' };
+      const item = { id: s.id + '-' + huella(it.c), c: it.c, e: it.e, d: it.d, b: it.b || 'base' };
       if (regla) item.r = regla;
 
       // Las familias separadas por «·» son alternativas: cualquiera vale.

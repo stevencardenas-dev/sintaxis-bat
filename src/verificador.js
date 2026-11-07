@@ -139,6 +139,42 @@
     return partirOperadores(tokenizar(texto)).map(ordenarOpciones);
   }
 
+  // Los modificadores de cmd (/f, -n, /im ...) se pueden escribir en cualquier
+  // orden: cada uno arrastra sus valores hasta el siguiente modificador.
+  function esBandera(t) {
+    return /^[/-][a-z]/i.test(t) && t.length > 1;
+  }
+
+  function reordenarBanderas(tokens) {
+    var grupos = [];
+    var i, t;
+    for (i = 0; i < tokens.length; i++) {
+      t = tokens[i];
+      if (esBandera(t)) {
+        grupos.push({ f: t, items: [t] });
+      } else if (grupos.length && grupos[grupos.length - 1].f) {
+        grupos[grupos.length - 1].items.push(t);
+      } else {
+        grupos.push({ f: null, items: [t] });
+      }
+    }
+    var conBandera = grupos.filter(function (g) {
+      return g.f;
+    });
+    if (conBandera.length < 2) return tokens;
+
+    var orden = conBandera.slice().sort(function (a, b) {
+      return a.f < b.f ? -1 : a.f > b.f ? 1 : 0;
+    });
+    var k = 0;
+    var salida = [];
+    grupos.forEach(function (g) {
+      var usar = g.f ? orden[k++] : g;
+      salida = salida.concat(usar.items);
+    });
+    return salida;
+  }
+
   function pareceArchivo(t) {
     var s = sinComillas(t);
     return s.indexOf('\\') !== -1 || EXTENSIONES.test(s);
@@ -236,6 +272,7 @@
   function coincidir(pasos, mios) {
     var j = 0;
     var mapa = {};
+    var inverso = {};
     var i, p, t, k, tope;
 
     for (i = 0; i < pasos.length; i++) {
@@ -251,8 +288,15 @@
         if (p.tipo === 'porcentaje' && !HOLDE_PORCENTAJE.test(t)) return null;
         if (p.tipo === 'etiqueta' && !/^:?[a-z_][a-z0-9_]*$/i.test(t)) return null;
         var valor = p.tipo === 'etiqueta' ? t.replace(/^:/, '') : t;
-        if (!Object.prototype.hasOwnProperty.call(mapa, p.id)) mapa[p.id] = valor;
-        else if (mapa[p.id] !== valor) return null;
+        if (!Object.prototype.hasOwnProperty.call(mapa, p.id)) {
+          // Dos piezas distintas no pueden escribirse con el mismo nombre:
+          // si %%b se escribe %%a, el script hace otra cosa.
+          if (inverso[valor] != null && inverso[valor] !== p.id) return null;
+          mapa[p.id] = valor;
+          inverso[valor] = p.id;
+        } else if (mapa[p.id] !== valor) {
+          return null;
+        }
         j += 1;
         continue;
       }
@@ -334,6 +378,15 @@
 
     if (coincidir(compilarPatron(otros), mios)) {
       return { estado: 'correcto', puntaje: 1, faltan: [], sobran: [], pistas: [] };
+    }
+
+    // Segundo intento: mismo contenido, modificadores en otro orden.
+    var miOrden = reordenarBanderas(mios);
+    var suOrden = reordenarBanderas(otros);
+    if (miOrden.join(' ') !== mios.join(' ') || suOrden.join(' ') !== otros.join(' ')) {
+      if (coincidir(compilarPatron(suOrden), miOrden)) {
+        return { estado: 'correcto', puntaje: 1, faltan: [], sobran: [], pistas: [] };
+      }
     }
 
     var faltan = restar(otros, mios);

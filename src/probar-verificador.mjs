@@ -5,6 +5,7 @@ import { reglas } from './verificador-reglas.mjs';
 import { secciones } from './datos.mjs';
 import { seccionesB } from './datos-b.mjs';
 import { seccionesC, apendices } from './datos-c.mjs';
+import { seccionesD } from './datos-d.mjs';
 
 const require = createRequire(import.meta.url);
 const V = require('./verificador.js');
@@ -165,7 +166,9 @@ ok('plan decide la interfaz', () => {
 });
 
 // ---------- integridad del registro ----------
-const todos = [...secciones, ...seccionesB, ...seccionesC, ...apendices].flatMap((s) => s.items || []);
+const todos = [...secciones, ...seccionesB, ...seccionesC, ...apendices, ...seccionesD].flatMap(
+  (s) => s.items || []
+);
 const claves = new Set();
 todos.forEach((it) => {
   claves.add(it.c);
@@ -221,6 +224,24 @@ ok('toda respuesta canónica se acepta a sí misma', () => {
     const valor = p.alt && p.alt.length ? p.alt[0] : it.c;
     const r = V.evaluar(it, [valor]);
     assert.equal(r.estado, 'correcto', 'no se acepta a sí misma: ' + JSON.stringify(it.c));
+  });
+});
+
+ok('cada respuesta modelo cumple sus propios requisitos', () => {
+  todos.forEach((it) => {
+    const regla = reglas[it.c] || (it.cod ? reglas[it.cod] : null);
+    if (!regla || !regla.requisitos) return;
+    const r = V.evaluar({ c: it.c, r: regla }, [it.c]);
+    assert.equal(r.estado, 'correcto', 'la respuesta modelo no cumple sus requisitos: ' + JSON.stringify(it.cod || it.c));
+  });
+});
+
+ok('cada familia de alternativas incluye su forma canónica', () => {
+  Object.keys(reglas).forEach((k) => {
+    const regla = reglas[k];
+    if (!regla.alt) return;
+    const it = todos.find((x) => x.c === k || x.cod === k);
+    assert.ok(it, 'familia sin ítem: ' + k);
   });
 });
 
