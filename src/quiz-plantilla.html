@@ -236,6 +236,14 @@ __FUENTES__
   .k-pct { color: #c4b5fd; }
   .k-str { color: #86efac; }
   .k-op { color: #fcd34d; }
+  .k-com { color: #64748b; font-style: italic; }
+  .cierres { display: block; margin-top: 6px; font-size: 11.5px; color: var(--dim); }
+  .cierres.ok { color: #6ee7b7; }
+  .cierres.mal { color: #fbbf24; }
+  .libre-titulo {
+    margin: 4px 0 0; font-size: 10.5px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--dim); font-weight: 700;
+  }
 
   .todas.repasar {
     border-color: #7f3b45;
@@ -299,6 +307,7 @@ __FUENTES__
     font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace; font-size: 13.5px; color: #d8ecff;
   }
   .libre-cerca .btn { margin-top: 14px; }
+  .libre-nada { margin: 0; color: var(--dim); font-size: 13.5px; }
   .grupo.completo { border-color: rgba(52,211,153,.45); }
   .grupo.completo .g-cuenta { color: #6ee7b7; }
 
@@ -421,6 +430,9 @@ __FUENTES__
     <h1>Práctica libre</h1>
     <p class="sub">Escribe cualquier comando: se descompone en piezas y se compara con las sintaxis del curso.</p>
     <textarea id="libre-texto" class="libre-campo" rows="3" spellcheck="false" placeholder="taskkill /f /im notepad.exe"></textarea>
+    <div class="libre-acciones">
+      <button type="button" class="btn" id="libre-formatear">Formatear sangría</button>
+    </div>
     <div class="libre-panel vacio" id="libre-panel"></div>
   </section>
 
@@ -690,6 +702,21 @@ __VERIFICADOR__
     });
     panel.appendChild(dl);
 
+    const vars = Verificador.variables(texto);
+    if (vars.length) {
+      const tituloVars = nodo('p', 'Variables');
+      tituloVars.className = 'libre-titulo';
+      panel.appendChild(tituloVars);
+      const dv = document.createElement('dl');
+      dv.className = 'libre-piezas';
+      vars.forEach((v) => {
+        let valor = v.valor || 'sin valor';
+        if (v.aviso) valor += ' · ' + v.aviso;
+        dv.append(nodo('dt', v.nombre), nodo('dd', valor));
+      });
+      panel.appendChild(dv);
+    }
+
     avisos.forEach((a) => {
       const el = nodo('p', a);
       el.className = 'libre-aviso';
@@ -698,6 +725,12 @@ __VERIFICADOR__
 
     if (!cerca) return;
     const ok = cerca.resultado.estado === 'correcto';
+    if (!ok && cerca.puntaje < 0.5) {
+      const nada = nodo('p', 'No se parece a ninguna sintaxis del curso. Revisa los avisos de arriba.');
+      nada.className = 'libre-nada';
+      panel.appendChild(nada);
+      return;
+    }
     const caja = document.createElement('div');
     caja.className = 'libre-cerca ' + (ok ? 'ok' : 'casi');
     caja.appendChild(nodo('b', ok ? 'Está en el curso' : 'Lo más parecido'));
@@ -800,16 +833,13 @@ __VERIFICADOR__
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  function resaltarCampo(ta) {
-    const pre = ta.parentNode && ta.parentNode.querySelector('.campo-resalte');
-    if (!pre) return;
-    const texto = ta.value;
+  function resaltarLinea(linea) {
     const re = /(%[A-Za-z_][A-Za-z0-9_]*%|![A-Za-z_][A-Za-z0-9_]*!|%%[A-Za-z]|"[^"]*"|2>&1|>>|2>|>|<|\|\||&&|\||&|\^)/g;
     let html = '';
     let ultimo = 0;
     let m;
-    while ((m = re.exec(texto)) !== null) {
-      if (m.index > ultimo) html += escaparHtml(texto.slice(ultimo, m.index));
+    while ((m = re.exec(linea)) !== null) {
+      if (m.index > ultimo) html += escaparHtml(linea.slice(ultimo, m.index));
       const t = m[0];
       let clase = 'k-op';
       if (t.charAt(0) === '"') clase = 'k-str';
@@ -818,8 +848,102 @@ __VERIFICADOR__
       html += '<span class="' + clase + '">' + escaparHtml(t) + '</span>';
       ultimo = m.index + t.length;
     }
-    if (ultimo < texto.length) html += escaparHtml(texto.slice(ultimo));
-    pre.innerHTML = html;
+    if (ultimo < linea.length) html += escaparHtml(linea.slice(ultimo));
+    return html;
+  }
+
+  function resaltarCampo(ta) {
+    const pre = ta.parentNode && ta.parentNode.querySelector('.campo-resalte');
+    if (!pre) return;
+    pre.innerHTML = ta.value
+      .split('\n')
+      .map((linea) => (/^\s*(rem\b|::)/i.test(linea) ? '<span class="k-com">' + escaparHtml(linea) + '</span>' : resaltarLinea(linea)))
+      .join('\n');
+  }
+
+  // Ayudas de editor: cierres, sangría y tabulación.
+  function ayudaEditor(e, ta) {
+    const ini = ta.selectionStart;
+    const fin = ta.selectionEnd;
+    if (ini !== fin) return false;
+    const valor = ta.value;
+    const antes = valor.slice(0, ini);
+    const despues = valor.slice(fin);
+    const siguiente = valor.charAt(fin);
+
+    function poner(texto, cursor) {
+      ta.value = valor.slice(0, ini) + texto + despues;
+      ta.setSelectionRange(cursor, cursor);
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    if (e.key === '(') {
+      e.preventDefault();
+      if (siguiente === ')') ta.setSelectionRange(ini + 1, ini + 1);
+      else poner('()', ini + 1);
+      return true;
+    }
+    if (e.key === '"') {
+      e.preventDefault();
+      if (siguiente === '"') ta.setSelectionRange(ini + 1, ini + 1);
+      else poner('""', ini + 1);
+      return true;
+    }
+    if (e.key === ')' && siguiente === ')') {
+      e.preventDefault();
+      ta.setSelectionRange(ini + 1, ini + 1);
+      return true;
+    }
+    if (e.key === '%' && /\d$/.test(antes) && siguiente !== '%') {
+      e.preventDefault();
+      poner('%%', ini + 1);
+      return true;
+    }
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const lineaIni = valor.lastIndexOf('\n', ini - 1) + 1;
+      if (e.shiftKey) {
+        const trozo = valor.slice(lineaIni);
+        const m = /^ {1,4}/.exec(trozo);
+        if (m) {
+          ta.value = valor.slice(0, lineaIni) + trozo.slice(m[0].length);
+          ta.setSelectionRange(Math.max(lineaIni, ini - m[0].length), Math.max(lineaIni, fin - m[0].length));
+          ta.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      } else {
+        poner('    ', ini + 4);
+      }
+      return true;
+    }
+    if (e.key === 'Enter' && (ta.dataset.multilinea === '1' || e.shiftKey)) {
+      const lineaIni = valor.lastIndexOf('\n', ini - 1) + 1;
+      const actual = valor.slice(lineaIni, ini);
+      const sangria = (/^ +/.exec(actual) || [''])[0];
+      const abre = /\(\s*$/.test(actual);
+      e.preventDefault();
+      const inserta = '\n' + sangria + (abre ? '    ' : '');
+      poner(inserta, ini + inserta.length);
+      return true;
+    }
+    return false;
+  }
+
+  function pintarCierres(ta) {
+    const caja = ta.parentNode && ta.parentNode.parentNode;
+    const el = caja && caja.querySelector('.cierres');
+    if (!el) return;
+    if (!ta.value.trim()) {
+      el.textContent = '';
+      el.className = 'cierres';
+      return;
+    }
+    const c = Verificador.cierres(ta.value);
+    const partes = [];
+    if (c.parentesis > 0) partes.push('falta cerrar ' + (c.parentesis === 1 ? 'un paréntesis' : c.parentesis + ' paréntesis'));
+    if (c.parentesis < 0) partes.push(c.parentesis === -1 ? 'sobra un paréntesis' : 'sobran ' + Math.abs(c.parentesis) + ' paréntesis');
+    if (c.comillas) partes.push('falta cerrar una comilla');
+    el.textContent = partes.length ? partes.join(' · ') : 'todo cerrado';
+    el.className = 'cierres' + (partes.length ? ' mal' : ' ok');
   }
 
   function pintarEntrada(q) {
@@ -864,6 +988,7 @@ __VERIFICADOR__
       ta.setAttribute('autocomplete', 'off');
       ta.setAttribute('autocapitalize', 'off');
       ta.setAttribute('autocorrect', 'off');
+      ta.dataset.multilinea = multilinea ? '1' : '0';
       ta.placeholder = multilinea ? 'Una instrucción por línea…' : 'Escribe aquí…';
 
       const envoltura = document.createElement('div');
@@ -880,19 +1005,24 @@ __VERIFICADOR__
       ta.addEventListener('input', () => {
         crecer(ta);
         resaltarCampo(ta);
+        pintarCierres(ta);
         borradores[q.id] = entrada.campos.map((c) => c.value);
       });
       ta.addEventListener('keydown', (e) => {
+        if (ayudaEditor(e, ta)) return;
         if (e.key === 'Enter' && !e.shiftKey && !multilinea && !resuelto) {
           e.preventDefault();
           comprobar();
         }
       });
 
-      cajaCampo.append(lab, envoltura);
+      const cierresEl = document.createElement('span');
+      cierresEl.className = 'cierres';
+      cajaCampo.append(lab, envoltura, cierresEl);
       cont.appendChild(cajaCampo);
       entrada.campos.push(ta);
       resaltarCampo(ta);
+      pintarCierres(ta);
       crecer(ta);
     });
 
@@ -1113,6 +1243,11 @@ __VERIFICADOR__
   $('btn-repetir').addEventListener('click', repetir);
   $('btn-simulacro').addEventListener('click', iniciarSimulacro);
   $('btn-libre').addEventListener('click', abrirLibre);
+  $('libre-formatear').addEventListener('click', () => {
+    const t = $('libre-texto');
+    t.value = Verificador.formatear(t.value);
+    analizarLibre();
+  });
   $('libre-texto').addEventListener('input', () => {
     clearTimeout(libreTimer);
     libreTimer = setTimeout(analizarLibre, 180);

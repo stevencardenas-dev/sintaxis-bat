@@ -164,6 +164,48 @@ si('encuentra la entrada más parecida del curso', () => {
   assert.equal(otro.resultado.estado, 'correcto');
 });
 
+// ---------- editor y variables ----------
+si('sigue las variables y sus valores', () => {
+  const v = V.variables('set "RUTA=C:\\datos"\necho %RUTA%\nset /p opcion=Digite:\nif "%opcion%"=="1" echo %NOEXISTE%');
+  const ruta = v.find((x) => x.nombre.toLowerCase() === 'ruta');
+  assert.equal(ruta.valor, 'C:\\datos');
+  assert.equal(ruta.usos, 1);
+  assert.equal(ruta.aviso, null);
+
+  const opcion = v.find((x) => x.nombre.toLowerCase() === 'opcion');
+  assert.equal(opcion.valor, 'lo escribe el usuario');
+
+  const suelta = v.find((x) => x.nombre.toLowerCase() === 'noexiste');
+  assert.ok(suelta.aviso.includes('no le asigna'));
+});
+
+si('reconoce la variable del for, %~dp0 y los argumentos', () => {
+  const v = V.variables('for /f "tokens=1" %%a in (lista.txt) do echo %%~nxa\ncopy "%~dp0x.txt" %1');
+  const f = v.find((x) => x.nombre === '%%a');
+  assert.ok(f.valor.includes('lista.txt'));
+  assert.ok(v.some((x) => x.nombre === '%~dp0'));
+  assert.ok(v.some((x) => x.nombre === '%1' && x.tipo === 'argumento'));
+});
+
+si('cuenta paréntesis y comillas abiertos', () => {
+  const c = V.cierres('if exist "x" (\n echo hola\n');
+  assert.equal(c.parentesis, 1);
+  const d = V.cierres('if exist "x" (\n echo hola\n)');
+  assert.equal(d.parentesis, 0);
+  assert.equal(V.cierres('echo "sin cerrar').comillas, 1);
+});
+
+si('formatea la sangría de un bloque pegado', () => {
+  const salida = V.formatear('if exist "x" (\necho hola\nif "%a%"=="1" (\necho uno\n)\n)');
+  assert.equal(salida, 'if exist "x" (\n    echo hola\n    if "%a%"=="1" (\n        echo uno\n    )\n)');
+});
+
+si('renombrar el for también renombra %%~nxF', () => {
+  const esperado = 'for %%F in ("*.txt") do echo %%~nxF';
+  correcto('for %%x in ("*.txt") do echo %%~nxx', esperado);
+  noCorrecto('for %%x in ("*.txt") do echo %%~nxf', esperado);
+});
+
 // ---------- interfaz ----------
 si('los requisitos no se confunden con una línea', () => {
   const item = { c: 'x', r: { requisitos: [{ texto: 'a', re: 'a' }] } };

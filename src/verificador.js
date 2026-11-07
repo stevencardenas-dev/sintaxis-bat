@@ -260,6 +260,12 @@
         }
         continue;
       }
+      // %%~nxF y compañía: el modificador se respeta, la letra es la variable del for.
+      var conModificador = /^%%~([a-z]*)([a-z])$/.exec(t);
+      if (conModificador) {
+        pasos.push({ k: 'm', id: '%%:%%' + conModificador[2], prefijo: conModificador[1] });
+        continue;
+      }
       if (i > 0 && pareceArchivo(t)) {
         pasos.push({ k: 'a' });
         continue;
@@ -295,6 +301,20 @@
           mapa[p.id] = valor;
           inverso[valor] = p.id;
         } else if (mapa[p.id] !== valor) {
+          return null;
+        }
+        j += 1;
+        continue;
+      }
+      if (p.k === 'm') {
+        var conMod = /^%%~([a-z]*)([a-z])$/i.exec(mios[j] || '');
+        if (!conMod || conMod[1].toLowerCase() !== p.prefijo) return null;
+        var letra = '%%' + conMod[2].toLowerCase();
+        if (!Object.prototype.hasOwnProperty.call(mapa, p.id)) {
+          if (inverso[letra] != null && inverso[letra] !== p.id) return null;
+          mapa[p.id] = letra;
+          inverso[letra] = p.id;
+        } else if (mapa[p.id] !== letra) {
           return null;
         }
         j += 1;
@@ -440,6 +460,11 @@
         salida.redirecciones.push(t);
         return;
       }
+      if (/^[a-z_][a-z0-9_]*=/i.test(t) || /^"[a-z_][a-z0-9_]*=/i.test(t)) {
+        // Asignaciones de set: no son archivos aunque lleven una ruta.
+        salida.texto.push(t);
+        return;
+      }
       if (pareceArchivo(t)) {
         salida.rutas.push(t);
         return;
@@ -466,6 +491,116 @@
     var sinDobles = s.replace(/%%[a-z]/gi, '%%_');
     if (/\bfor\b[^\n]*\s%[a-z]\b/i.test(sinDobles)) fuera.push('Dentro de un .bat la variable del for se escribe %%a.');
     return fuera;
+  }
+
+  // Seguimiento de variables: quién las asigna, con qué valor y cuántas veces se usan.
+  function variables(texto) {
+    var s = limpiar(texto);
+    var mapa = {};
+    var orden = [];
+    var m;
+
+    function reg(nombre, tipo) {
+      var k = String(nombre).toLowerCase();
+      if (!mapa[k]) {
+        mapa[k] = { nombre: nombre, tipo: tipo, valor: null, asignada: false, usos: 0 };
+        orden.push(mapa[k]);
+      }
+      return mapa[k];
+    }
+
+    s.split('\n').forEach(function (l) {
+      var v;
+      if ((m = /^\s*set\s+\/p\s+"?([^"=\s]+)=/i.exec(l))) {
+        v = reg(m[1], 'propia');
+        v.valor = 'lo escribe el usuario';
+        v.asignada = true;
+      } else if ((m = /^\s*set\s+"([^"=]+)=([^"]*)"/i.exec(l))) {
+        v = reg(m[1], 'propia');
+        v.valor = m[2];
+        v.asignada = true;
+      } else if ((m = /^\s*set\s+([^=\s]+)=([^\s]*)/i.exec(l))) {
+        v = reg(m[1], 'propia');
+        v.valor = m[2];
+        v.asignada = true;
+      }
+    });
+
+    var reFor = /\bfor\b[^\n]*?(%%[a-z])\s+in\s*\(([^)]*)\)/gi;
+    while ((m = reFor.exec(s)) !== null) {
+      var vf = reg(m[1], 'for');
+      vf.valor = 'cada elemento de (' + m[2].trim() + ')';
+      vf.asignada = true;
+    }
+
+    var reEspecial = /%~[a-z]*\d/gi;
+    while ((m = reEspecial.exec(s)) !== null) {
+      var ve = reg(m[0], 'especial');
+      ve.valor = 'ruta del propio .bat';
+      ve.asignada = true;
+      ve.usos += 1;
+    }
+
+    var reForVar = /%%~?[a-z]*([a-z])/gi;
+    while ((m = reForVar.exec(s)) !== null) {
+      reg('%%' + m[1], 'for').usos += 1;
+    }
+
+    var reVar = /%([a-z_][a-z0-9_]*)%|!([a-z_][a-z0-9_]*)!/gi;
+    while ((m = reVar.exec(s)) !== null) {
+      var nombre = m[1] || m[2];
+      var tipo = VARS_SISTEMA.test('%' + nombre + '%') ? 'sistema' : 'propia';
+      var vr = reg(nombre, tipo);
+      if (tipo === 'sistema' && !vr.valor) vr.valor = 'valor del sistema';
+      vr.usos += 1;
+    }
+
+    var reArg = /%(\d|\*)/g;
+    while ((m = reArg.exec(s)) !== null) {
+      var va = reg('%' + m[1], 'argumento');
+      va.valor = m[1] === '*' ? 'todos los argumentos' : 'argumento ' + m[1];
+      va.asignada = true;
+      va.usos += 1;
+    }
+
+    return orden.map(function (v) {
+      var aviso = null;
+      if (v.tipo === 'propia' && !v.asignada) aviso = 'se usa pero el script no le asigna valor';
+      else if (v.tipo === 'propia' && v.usos === 0) aviso = 'se asigna y no se usa';
+      return { nombre: v.nombre, tipo: v.tipo, valor: v.valor, usos: v.usos, aviso: aviso };
+    });
+  }
+
+  // Paréntesis y comillas que quedan abiertos.
+  function cierres(texto) {
+    var s = limpiar(texto);
+    var abre = 0;
+    var cierra = 0;
+    var comillas = 0;
+    var i;
+    for (i = 0; i < s.length; i++) {
+      if (s.charAt(i) === '"') comillas += 1;
+      else if (s.charAt(i) === '(') abre += 1;
+      else if (s.charAt(i) === ')') cierra += 1;
+    }
+    return { parentesis: abre - cierra, comillas: comillas % 2 };
+  }
+
+  // Reindenta un bloque pegado: cada paréntesis abre un nivel de cuatro espacios.
+  function formatear(texto) {
+    var nivel = 0;
+    return limpiar(texto)
+      .split('\n')
+      .map(function (bruta) {
+        var l = bruta.replace(/\s+$/, '');
+        if (!l.trim()) return '';
+        var limpia = l.trim();
+        if (/^\)/.test(limpia)) nivel = Math.max(0, nivel - 1);
+        var salida = new Array(nivel + 1).join('    ') + limpia;
+        if (/\($/.test(limpia) && !/^rem\b/i.test(limpia)) nivel += 1;
+        return salida;
+      })
+      .join('\n');
   }
 
   // La entrada del curso más parecida a lo escrito.
@@ -620,6 +755,9 @@
     compararCampos: compararCampos,
     piezas: piezas,
     avisos: avisos,
+    variables: variables,
+    cierres: cierres,
+    formatear: formatear,
     parecido: parecido,
     plan: plan,
     evaluar: evaluar
