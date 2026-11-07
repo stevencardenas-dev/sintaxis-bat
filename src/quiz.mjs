@@ -30,7 +30,7 @@ const grupos = todas
     sec: s.titulo,
     id: s.id,
     color: s.color,
-    items: s.items.map((it, idx) => {
+    items: s.items.filter((it) => !it.soloGuia).map((it, idx) => {
       const regla = reglas[it.c] || (it.cod ? reglas[it.cod] : null);
       // Id estable: el progreso guardado no depende del texto de la respuesta.
       const item = { id: s.id + '-' + huella(it.c), c: it.c, e: it.e, d: it.d, b: it.b || 'base' };

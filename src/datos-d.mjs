@@ -275,6 +275,14 @@ export const seccionesD = [
         e: 'Por eso conviene que lista.txt traiga los nombres completos, o usar /pid.',
         d: 'previo',
         b: 'avanzado'
+      },
+      {
+        cod: 'previo-completo',
+        c: '@echo off\nchcp 65001 >nul\nnet session >nul 2>&1\nif errorlevel 1 (\n    echo Se necesitan permisos de administrador.\n    pause\n    exit /b\n)\nfor /f "tokens=1 delims=," %%a in (lista.txt) do taskkill /f /im %%a\nsysteminfo > "%USERPROFILE%\\Desktop\\estado_actual.txt"\nfc "estado_anterior.txt" "estado_actual.txt" >nul\nif errorlevel 1 (\n    netsh interface set interface "Ethernet" disable\n)\ncertutil -f -encodehex "estado_actual.txt" "estado_actual.hex"\npause',
+        e: 'El previo completo, en un solo script. Se corrige por piezas: el orden, los mensajes y los nombres de archivo pueden cambiar.',
+        d: 'previo',
+        b: 'avanzado',
+        w: 'Es la respuesta larga. Sirve para comprobar el script que ya escribiste, no para copiarla de memoria.'
       }
     ]
   },

@@ -173,6 +173,19 @@ export const reglas = {
     ]
   },
 
+  'previo-completo': {
+    requisitos: [
+      { texto: 'Apaga el eco al arrancar', re: '@echo\\s+off' },
+      { texto: 'Lee lista.txt con for /f', re: 'for\\s+/f[\\s\\S]*lista\\.txt' },
+      { texto: 'Mata cada proceso con taskkill /f /im', re: 'taskkill\\s+/f\\s+/im' },
+      { texto: 'Exporta el estado con systeminfo y una redirección', re: 'systeminfo\\s*>' },
+      { texto: 'Compara los dos estados con fc', re: '\\bfc\\b[\\s\\S]*estado_anterior' },
+      { texto: 'Usa if errorlevel 1', re: 'if\\s+errorlevel\\s+1' },
+      { texto: 'Desactiva Ethernet con netsh ... disable', re: 'netsh\\s+interface\\s+set\\s+interface[\\s\\S]*disable' },
+      { texto: 'Codifica a hexadecimal con certutil -encodehex', re: 'certutil[\\s\\S]*-encodehex' }
+    ]
+  },
+
   // --- correo ---
   'mail-lanzador': {
     requisitos: [

@@ -331,7 +331,8 @@ export const apendices = [
         c: 'wmic memorychip get BankLabel, Capacity, Speed',
         e: 'WMIC consulta hardware y sistema por consola: RAM, discos, CPU, placa base, licencia. Está obsoleto en Windows 11 y Microsoft pide migrar a PowerShell/Get-CimInstance.',
         d: 'JUANDIEGO-AUTO.bat, ROYNER.bat',
-        b: 'avanzado'
+        b: 'avanzado',
+        soloGuia: true
       },
       {
         c: 'winget install --id Git.Git --silent   ·   winget upgrade --all',

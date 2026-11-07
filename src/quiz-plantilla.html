@@ -242,6 +242,12 @@ __FUENTES__
     background: linear-gradient(120deg, rgba(248,113,113,.18), rgba(248,113,113,.04));
   }
   .todas.repasar:hover { border-color: #a9505c; background: linear-gradient(120deg, rgba(248,113,113,.24), rgba(248,113,113,.06)); }
+  .todas.simulacro {
+    border-color: #1d4ed8;
+    background: linear-gradient(120deg, rgba(56,189,248,.16), rgba(56,189,248,.03));
+  }
+  .todas.simulacro:hover { border-color: #2f7de1; background: linear-gradient(120deg, rgba(56,189,248,.22), rgba(56,189,248,.05)); }
+  .todas.exportar { border-color: #2b4056; background: rgba(255,255,255,.03); }
   .grupo.completo { border-color: rgba(52,211,153,.45); }
   .grupo.completo .g-cuenta { color: #6ee7b7; }
 
@@ -335,6 +341,16 @@ __FUENTES__
       <span class="t-sub" id="todas-sub"></span>
       <span class="t-flecha">→</span>
     </button>
+    <button type="button" class="todas simulacro" id="btn-simulacro">
+      <span class="t-txt">Simulacro</span>
+      <span class="t-sub">10 al azar, sin pistas</span>
+      <span class="t-flecha">→</span>
+    </button>
+    <button type="button" class="todas exportar" id="btn-exportar" hidden>
+      <span class="t-txt">Descargar resultados</span>
+      <span class="t-sub">Aciertos por categoría</span>
+      <span class="t-flecha">↓</span>
+    </button>
     <button type="button" class="todas repasar" id="btn-repasar" hidden>
       <span class="t-txt">Repasar falladas</span>
       <span class="t-sub" id="repasar-sub"></span>
@@ -420,6 +436,8 @@ __VERIFICADOR__
   const intentosItem = {};
   const borradores = {};
   let resuelto = false;
+  let modoExamen = false;
+  let examen = { aciertos: 0, total: 0 };
 
   function guardarProgreso() {
     try {
@@ -447,6 +465,7 @@ __VERIFICADOR__
     });
     const pendientes = falladas();
     $('btn-repasar').hidden = pendientes.length === 0;
+    $('btn-exportar').hidden = !TODOS.some((it) => progreso[it.id]);
     if (pendientes.length) {
       $('repasar-sub').textContent = pendientes.length + ' por repasar';
     }
@@ -456,6 +475,7 @@ __VERIFICADOR__
     lista = falladas();
     if (!lista.length) return;
     activo = -2;
+    modoExamen = false;
     i = 0;
     $('inicio').hidden = true;
     $('btn-volver').hidden = false;
@@ -463,6 +483,61 @@ __VERIFICADOR__
     $('cat-nombre').textContent = 'Repaso de falladas';
     $('cat-dot').style.background = '#f87171';
     pintar();
+  }
+
+  function iniciarSimulacro() {
+    const evaluables = TODOS.filter((it) => Verificador.plan(it).tipo !== 'revelar');
+    const barajado = evaluables.slice();
+    for (let k = barajado.length - 1; k > 0; k--) {
+      const j = Math.floor(Math.random() * (k + 1));
+      const tmp = barajado[k];
+      barajado[k] = barajado[j];
+      barajado[j] = tmp;
+    }
+    lista = barajado.slice(0, 10);
+    activo = -3;
+    modoExamen = true;
+    examen = { aciertos: 0, total: lista.length };
+    i = 0;
+    $('q').value = '';
+    filtrar();
+    $('q').blur();
+    $('inicio').hidden = true;
+    $('btn-volver').hidden = false;
+    $('cat-activa').hidden = false;
+    $('cat-nombre').textContent = 'Simulacro';
+    $('cat-dot').style.background = '#38bdf8';
+    pintar();
+  }
+
+  function repetir() {
+    if (activo === -3) iniciarSimulacro();
+    else if (activo === -2) iniciarFallas();
+    else iniciar(activo);
+  }
+
+  function exportar() {
+    const lineas = ['Sintaxis .BAT — progreso', new Date().toLocaleString(), ''];
+    let totalOk = 0;
+    let total = 0;
+    GRUPOS.forEach((g) => {
+      const ok = aciertosDe(g);
+      totalOk += ok;
+      total += g.items.length;
+      if (ok) lineas.push(ok + '/' + g.items.length + '  ' + g.sec);
+    });
+    lineas.push('', 'Total: ' + totalOk + '/' + total);
+    const pendientes = falladas();
+    if (pendientes.length) {
+      lineas.push('', 'Pendientes (' + pendientes.length + '):');
+      pendientes.slice(0, 40).forEach((it) => lineas.push('- ' + it.c.split('\n')[0]));
+    }
+    const blob = new Blob([lineas.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'sintaxis-bat-progreso.txt';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
   $('pie').textContent = TODOS.length + ' sintaxis únicas · ' + GRUPOS.length + ' categorías';
@@ -489,6 +564,7 @@ __VERIFICADOR__
 
   function iniciar(indice) {
     activo = indice;
+    modoExamen = false;
     const grupo = indice >= 0 ? GRUPOS[indice] : null;
     lista = grupo ? grupo.items : TODOS;
     i = 0;
@@ -530,7 +606,7 @@ __VERIFICADOR__
     $('ver').append(b, document.createTextNode(q.d || '—'));
 
     $('btn-mostrar').disabled = false;
-    $('btn-anterior').disabled = i === 0;
+    $('btn-anterior').disabled = i === 0 || modoExamen;
     $('tarjeta').hidden = false;
     $('fin').hidden = true;
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -602,7 +678,7 @@ __VERIFICADOR__
       return;
     }
 
-    const multilinea = plan.tipo === 'bloque';
+    const multilinea = plan.tipo === 'bloque' || /\n/.test(q.c);
     const defs = plan.tipo === 'campos'
       ? plan.campos.map((c) => ({ rotulo: c.rotulo || 'Parte', alto: 2 }))
       : [{
@@ -661,7 +737,7 @@ __VERIFICADOR__
 
     $('entrada').hidden = false;
     $('pendiente').textContent = plan.tipo === 'requisitos'
-      ? 'Escribe la línea completa: se corrige por piezas.'
+      ? (multilinea ? 'Escribe el script completo: se corrige por piezas.' : 'Escribe la línea completa: se corrige por piezas.')
       : 'Piensa la sintaxis… y escríbela aquí.';
     $('ayuda').textContent = plan.tipo === 'requisitos'
       ? 'Cada pieza correcta suma.'
@@ -690,6 +766,23 @@ __VERIFICADOR__
     const caja = $('dictamen');
     const piezas = [];
     const intento = (intentosItem[q.id] = (intentosItem[q.id] || 0) + 1);
+
+    // En el simulacro no hay pistas ni detalle: solo acierto o fallo.
+    if (modoExamen) {
+      if (r.estado === 'vacio') {
+        caja.className = 'dictamen casi';
+        caja.replaceChildren(nodo('b', 'Escribe algo primero'));
+        caja.hidden = false;
+        return;
+      }
+      if (r.estado === 'correcto' && !resuelto) examen.aciertos += 1;
+      resuelto = r.estado === 'correcto';
+      caja.className = 'dictamen ' + (resuelto ? 'ok' : 'mal');
+      caja.replaceChildren(nodo('b', resuelto ? 'Correcto' : 'Incorrecto'));
+      caja.hidden = false;
+      if (resuelto) mostrar();
+      return;
+    }
 
     if (r.estado === 'vacio') {
       caja.className = 'dictamen casi';
@@ -771,11 +864,19 @@ __VERIFICADOR__
     $('contador').textContent = lista.length + ' / ' + lista.length;
     $('tarjeta').hidden = true;
     $('fin').hidden = false;
-    $('fin-titulo').textContent = activo >= 0 ? 'Terminaste «' + GRUPOS[activo].sec + '»' : 'Terminaste las ' + lista.length + ' preguntas';
-    const bien = lista.filter((it) => progreso[it.id] && progreso[it.id].ok).length;
-    $('fin-txt').textContent =
-      'Acertadas ' + bien + ' de ' + lista.length + '. ' +
-      (bien === lista.length ? 'Todo completo.' : 'Quedan para repasar.');
+    if (modoExamen) {
+      const pct = Math.round((examen.aciertos / Math.max(1, examen.total)) * 100);
+      $('fin-titulo').textContent = 'Simulacro terminado';
+      $('fin-txt').textContent =
+        'Acertaste ' + examen.aciertos + ' de ' + examen.total + ' (' + pct + '%). ' +
+        (examen.aciertos === examen.total ? 'Sin fallos.' : 'Los fallos no se guardan.');
+    } else {
+      $('fin-titulo').textContent = activo >= 0 ? 'Terminaste «' + GRUPOS[activo].sec + '»' : 'Terminaste las ' + lista.length + ' preguntas';
+      const bien = lista.filter((it) => progreso[it.id] && progreso[it.id].ok).length;
+      $('fin-txt').textContent =
+        'Acertadas ' + bien + ' de ' + lista.length + '. ' +
+        (bien === lista.length ? 'Todo completo.' : 'Quedan para repasar.');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -789,7 +890,11 @@ __VERIFICADOR__
   function filtrar() {
     const t = norm($('q').value.trim());
     visibles = t ? [] : [{ el: $('btn-todas'), run: () => iniciar(-1) }];
-    if (!t && !$('btn-repasar').hidden) visibles.push({ el: $('btn-repasar'), run: iniciarFallas });
+    if (!t) {
+      visibles.push({ el: $('btn-simulacro'), run: iniciarSimulacro });
+      if (!$('btn-exportar').hidden) visibles.push({ el: $('btn-exportar'), run: exportar });
+      if (!$('btn-repasar').hidden) visibles.push({ el: $('btn-repasar'), run: iniciarFallas });
+    }
     let coincidencias = 0;
     cartas.forEach((el, idx) => {
       const ok = !t || norm(GRUPOS[idx].sec).includes(t);
@@ -820,8 +925,8 @@ __VERIFICADOR__
 
   function irAInicio() {
     lista = [];
-    i = 0;
-    activo = null;
+    i = 0;    activo = null;
+    modoExamen = false;
     $('q').value = '';
     $('inicio').hidden = false;
     $('tarjeta').hidden = true;
@@ -842,7 +947,9 @@ __VERIFICADOR__
   $('btn-anterior').addEventListener('click', anterior);
   $('btn-volver').addEventListener('click', irAInicio);
   $('btn-elegir').addEventListener('click', irAInicio);
-  $('btn-repetir').addEventListener('click', () => iniciar(activo));
+  $('btn-repetir').addEventListener('click', repetir);
+  $('btn-simulacro').addEventListener('click', iniciarSimulacro);
+  $('btn-exportar').addEventListener('click', exportar);
   $('q').addEventListener('input', filtrar);
   $('btn-repasar').addEventListener('click', iniciarFallas);
   $('entrada').addEventListener('submit', (e) => {
