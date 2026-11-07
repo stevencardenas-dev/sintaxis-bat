@@ -12,6 +12,7 @@ Versión publicada: <https://stevencardenas-dev.github.io/sintaxis-bat/>
 |---|---|
 | `Quiz-Sintaxis-BAT.html` | Cuestionario interactivo de 250 preguntas en 25 categorías, con previo, simulacro, práctica libre y progreso guardado. |
 | `src/` | La fuente de datos y el código que genera el cuestionario. |
+| `CALIDAD.md` | Criterios de calidad de los ejercicios y las fuentes que los respaldan. |
 | `src/generar.mjs` | Generador opcional de la guía PDF para imprimir; el PDF no se versiona. |
 
 El cuestionario es autónomo:
@@ -67,6 +68,7 @@ src/
   verificador-reglas.mjs   Casos que necesitan campos, alternativas o requisitos
   probar-verificador.mjs   29 pruebas del motor y del modelo de respuestas
   probar-limites.mjs       31 casos límite (equivalencias, tildes, familias, editor)
+  calidad.mjs              Audita decoración, anotaciones meta, goto, menús y duplicados
   generar.mjs              Genera la guía HTML intermedia y el PDF con Chrome
   guia.html                HTML intermedio del PDF (se regenera solo)
   quiz-plantilla.html      Plantilla del cuestionario (CSS y JS)
@@ -85,7 +87,8 @@ Google Chrome instalado.
 
 ```bash
 npm install --no-audit --no-fund
-npm run verificar        # motor + casos límite, sin navegador
+npm run verificar        # motor + casos límite + calidad, sin navegador
+npm run calidad          # solo la auditoría del banco
 npm run quiz             # escribe Quiz-Sintaxis-BAT.html
 npm run pdf              # guía PDF opcional para imprimir (no se versiona)
 npm run empaquetar       # empaqueta todo en Sintaxis-BAT.zip

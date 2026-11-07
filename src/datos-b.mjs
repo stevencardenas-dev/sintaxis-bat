@@ -28,9 +28,13 @@ export const seccionesB = [
         b: 'avanzado'
       },
       {
-        c: ':AYUDA ... :FIN   +   goto AYUDA',
-        e: 'Patrón de «páginas» del script: cada etiqueta es una pantalla y goto salta entre ellas.',
-        d: 'EjemplosBatch.bat (fragmento repite)',
+        c: `if "%1"=="/?" goto AYUDA
+:AYUDA
+echo Uso: script.bat archivo
+goto :FIN
+:FIN`,
+        e: 'Salto a la ayuda: si el usuario pasa /?, el flujo va a :AYUDA, imprime el uso y termina en :FIN. Es un goto con salida, no un menú.',
+        d: 'EjemplosBatch.bat (fragmento)',
         b: 'avanzado'
       },
       {
@@ -40,11 +44,14 @@ export const seccionesB = [
         b: 'avanzado'
       },
       {
-        c: ':estudio ... :descanso ... (sin goto final)',
-        e: 'Si una sección no termina en goto menu o goto fin, la ejecución SIGUE y cae en la etiqueta siguiente, que se ejecuta sin que el usuario la elija.',
+        c: `:estudio
+echo Estudiar
+:descanso
+echo Descansar`,
+        e: 'Si una sección no termina en goto, la ejecución SIGUE y cae en la etiqueta siguiente: al terminar estudio se ejecuta descanso sin que el usuario lo elija.',
         d: 'angela.bat',
         b: 'trampa',
-        w: 'Cierra siempre cada sección con un salto explícito: pause + goto menu, o goto :EOF.'
+        w: 'Cierra siempre cada sección con un salto explícito: goto :FIN o goto :EOF.'
       }
     ]
   },

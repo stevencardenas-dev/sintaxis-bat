@@ -10,20 +10,23 @@ export const seccionesC = [
       'Combinaciones completas que aparecen una y otra vez en los 26 scripts. Más que sintaxis, son las recetas con las que se arma cualquier .bat de administración.',
     items: [
       {
-        c: ':menu → cls → echo opciones → set /p → if → goto',
-        e: 'EL patrón número uno del taller: pantalla limpia, opciones numeradas, lectura con set /p, un if por opción que salta a su etiqueta y cada opción termina en pause + goto menu.',
-        d: 'CAMILO.bat, EDWIN.bat, JORGE.bat, IRAIDA.bat',
+        c: `:reintentar
+timeout /t 3 >nul
+if not exist "reporte.txt" goto reintentar
+echo Reporte listo`,
+        e: 'Espera activa: reintenta cada 3 segundos hasta que exista el reporte. La etiqueta marca el inicio y el goto vuelve a ella mientras se cumpla la condición.',
+        d: 'WinSysToolkit-ELKIN.bat',
         b: 'base'
       },
       {
-        c: 'if "%opcion%"=="" goto menu',
-        e: 'Validación de entrada vacía o inválida antes de procesarla; la versión rápida es dejar caer al final del menú con un goto menu sin condición, como opción por defecto.',
+        c: 'if "%opcion%"=="" goto :error',
+        e: 'Validación de entrada vacía: si no se eligió nada, sale por la etiqueta de error en vez de seguir con un valor vacío.',
         d: 'CRISTIAN.bat, JAIRO.bat',
         b: 'base'
       },
       {
-        c: 'set "op="   (antes de set /p)',
-        e: 'Higiene de menús: borrar la variable antes de leerla evita que, al pulsar Enter sin escribir, quede el valor anterior y se repita la acción por accidente.',
+        c: 'set "op="',
+        e: 'Borrar la variable antes de leerla con set /p evita que, al pulsar Enter sin escribir, quede el valor anterior y se repita la acción por accidente.',
         d: 'CRISTIAN.bat, JAIRO.bat, broma.bat',
         b: 'base'
       },
@@ -135,19 +138,19 @@ export const seccionesC = [
         b: 'trampa'
       },
       {
-        c: 'if exist %command% echo Compiling... [salto] else goto :error',
+        c: 'if exist %command% echo Compiling... else goto :error',
         e: 'ERROR (EjemplosBatch.bat, bloque Java). La variable sin comillas revienta si está vacía, y el else en línea aparte no funciona tras una instrucción simple.',
         d: 'Correcto: if exist "%command%" ( ... ) else ( ... )',
         b: 'trampa'
       },
       {
-        c: 'set /p opcion=%1   (en un menú)',
+        c: 'set /p opcion=%1',
         e: 'RARO (EjemplosBatch.bat, menu1 a menu10). %1 es el primer argumento del script; si no se le pasa, el prompt queda vacío y el usuario no sabe qué teclear.',
         d: 'Correcto: set /p opcion=Digite el numero:',
         b: 'trampa'
       },
       {
-        c: 'if %opcion%==1 ...   (con opcion vacía)',
+        c: 'if %opcion%==1',
         e: 'TRAMPA GENERAL: cualquier if %var%==x se rompe cuando la variable quedó vacía, porque la línea se convierte en «if ==1».',
         d: 'Correcto: if "%opcion%"=="1"',
         b: 'trampa'

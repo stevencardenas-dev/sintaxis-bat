@@ -319,11 +319,12 @@ export const reglas = {
     ]
   },
 
-  ':AYUDA ... :FIN   +   goto AYUDA': {
+  'if "%1"=="/?" goto AYUDA\n:AYUDA\necho Uso: script.bat archivo\ngoto :FIN\n:FIN': {
     requisitos: [
+      { texto: 'Detecta /? y salta a la ayuda', re: 'if\\s+"%1"\\s*==\\s*"/\\?"\\s+goto\\s+ayuda' },
       { texto: 'Define la etiqueta :AYUDA', re: ':ayuda' },
-      { texto: 'Define la etiqueta :FIN', re: ':fin' },
-      { texto: 'Salta a ella con goto AYUDA', re: 'goto\\s+:?ayuda' }
+      { texto: 'Imprime el uso', re: 'echo\\s+uso' },
+      { texto: 'Cierra en :FIN', re: 'goto\\s+:fin[\\s\\S]*:fin' }
     ]
   },
 
@@ -335,20 +336,21 @@ export const reglas = {
     ]
   },
 
-  ':estudio ... :descanso ... (sin goto final)': {
+  ':estudio\necho Estudiar\n:descanso\necho Descansar': {
     requisitos: [
       { texto: 'Define la etiqueta :estudio', re: ':estudio' },
+      { texto: 'Escribe el primer bloque', re: 'echo\\s+estudiar' },
       { texto: 'Define la etiqueta :descanso', re: ':descanso' },
-      { texto: 'Explica que sin goto se cae en la etiqueta siguiente', re: 'sin\\s+goto|cae|sigue|contin' }
+      { texto: 'Escribe el segundo bloque', re: 'echo\\s+descansar' }
     ]
   },
 
-  ':menu → cls → echo opciones → set /p → if → goto': {
+  ':reintentar\ntimeout /t 3 >nul\nif not exist "reporte.txt" goto reintentar\necho Reporte listo': {
     requisitos: [
-      { texto: 'Abre con la etiqueta :menu', re: ':menu' },
-      { texto: 'Limpia la pantalla con cls', re: '\\bcls\\b' },
-      { texto: 'Lee la opción con set /p', re: 'set\\s+/p' },
-      { texto: 'Decide con if y salta con goto', re: 'if[\\s\\S]*goto' }
+      { texto: 'Abre la etiqueta :reintentar', re: ':reintentar' },
+      { texto: 'Espera 3 segundos con timeout', re: 'timeout\\s+/t\\s+3' },
+      { texto: 'Vuelve a la etiqueta si falta el reporte', re: 'if\\s+not\\s+exist\\s+"reporte\\.txt"\\s+goto\\s+reintentar' },
+      { texto: 'Avisa cuando el reporte existe', re: 'echo\\s+reporte\\s+listo' }
     ]
   },
 
@@ -393,7 +395,7 @@ export const reglas = {
     ]
   },
 
-  'if exist %command% echo Compiling... [salto] else goto :error': {
+  'if exist %command% echo Compiling... else goto :error': {
     requisitos: [
       { texto: 'Comprueba if exist sobre %command%', re: 'if\\s+exist\\s+"?%command%"?' },
       { texto: 'Avisa con echo', re: 'echo' },
@@ -401,10 +403,9 @@ export const reglas = {
     ]
   },
 
-  'if %opcion%==1 ...   (con opcion vacía)': {
+  'if %opcion%==1': {
     requisitos: [
-      { texto: 'Compara %opcion% con 1', re: 'if\\s+"?%opcion%"?\\s*==\\s*"?1"?' },
-      { texto: 'Protege la comparación con comillas (o lo advierte)', re: '"%opcion%"|comillas|vac[ií]a' }
+      { texto: 'Compara %opcion% con 1', re: 'if\\s+"?%opcion%"?\\s*==\\s*"?1"?' }
     ]
   },
 

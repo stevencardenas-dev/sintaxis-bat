@@ -455,12 +455,11 @@ export const secciones = [
       },
       {
         c: `if "%opcion%"=="1" (
-    goto opcion1
+    echo Opcion uno
 ) else if "%opcion%"=="2" (
-    goto opcion2
+    echo Opcion dos
 ) else (
     echo Opcion invalida
-    goto menu
 )`,
         e: 'Cadena de alternativas sin anidar bloques: cada «) else if (...)» añade una condición nueva y el último «) else (» es el caso por defecto. Es el equivalente batch de un switch.',
         d: 'DANIEL.bat, JEINER.bat, YORMAN.bat',
@@ -478,7 +477,7 @@ export const secciones = [
       {
         c: `if not "%CLAVE%"=="%PASS%" (
     echo Clave incorrecta
-    goto menu
+    goto :error
 )`,
         e: 'not niega la condición y deja el bloque para el caso contrario; con él se construye el login de IRAIDA.bat.',
         d: 'IRAIDA.bat',

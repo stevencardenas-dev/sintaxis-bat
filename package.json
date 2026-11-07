@@ -7,7 +7,8 @@
     "quiz": "node src/quiz.mjs",
     "probar": "node src/probar-verificador.mjs",
     "limites": "node src/probar-limites.mjs",
-    "verificar": "node src/probar-verificador.mjs && node src/probar-limites.mjs",
+    "calidad": "node src/calidad.mjs",
+    "verificar": "node src/probar-verificador.mjs && node src/probar-limites.mjs && node src/calidad.mjs",
     "pdf": "node src/generar.mjs",
     "empaquetar": "node src/empaquetar.mjs"
   },
