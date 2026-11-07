@@ -478,7 +478,15 @@
       var coste = (r.faltan ? r.faltan.length : 0) + (r.sobran ? r.sobran.length : 0);
       var puntaje = r.estado === 'correcto' ? 2 : r.puntaje;
       if (!mejor || puntaje > mejor.puntaje || (puntaje === mejor.puntaje && coste < mejor.coste)) {
-        mejor = { forma: c.forma, item: c.item, resultado: r, puntaje: puntaje, coste: coste };
+        mejor = {
+          forma: c.forma,
+          item: c.item,
+          resultado: r,
+          puntaje: puntaje,
+          coste: coste,
+          gi: c.gi,
+          k: c.k
+        };
       }
     });
     return mejor;

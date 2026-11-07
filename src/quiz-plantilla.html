@@ -654,6 +654,7 @@ __VERIFICADOR__
   }
 
   function abrirItem(cerca) {
+    if (cerca.gi == null || cerca.k == null) return;
     iniciar(cerca.gi);
     i = cerca.k;
     pintar();

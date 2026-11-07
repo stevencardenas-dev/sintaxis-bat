@@ -150,9 +150,12 @@ si('no avisa cuando el comando está bien', () => {
 
 si('encuentra la entrada más parecida del curso', () => {
   const catalogo = [
-    { forma: 'taskkill /f /im notepad.exe', item: { id: 'a' } },
-    { forma: 'ping -n 4 google.com', item: { id: 'b' } }
+    { forma: 'taskkill /f /im notepad.exe', item: { id: 'a' }, gi: 4, k: 2 },
+    { forma: 'ping -n 4 google.com', item: { id: 'b' }, gi: 5, k: 1 }
   ];
+  const conUbicacion = V.parecido('taskkill /f /im notepad.exe', catalogo);
+  assert.equal(conUbicacion.gi, 4);
+  assert.equal(conUbicacion.k, 2);
   const cerca = V.parecido('taskkil /f /im notepad.exe', catalogo);
   assert.equal(cerca.forma, 'taskkill /f /im notepad.exe');
   assert.ok(cerca.resultado.pistas.some((p) => p.indexOf('taskkill') !== -1));
