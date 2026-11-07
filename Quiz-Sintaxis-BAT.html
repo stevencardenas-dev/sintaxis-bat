@@ -261,6 +261,57 @@
   }
   .todas.simulacro:hover { border-color: #2f7de1; background: linear-gradient(120deg, rgba(56,189,248,.22), rgba(56,189,248,.05)); }
   .todas.exportar { border-color: #2b4056; background: rgba(255,255,255,.03); }
+  .todas.libre-boton {
+    border-color: #155e75;
+    background: linear-gradient(120deg, rgba(45,212,191,.14), rgba(45,212,191,.03));
+  }
+  .todas.libre-boton:hover { border-color: #1e7f8f; background: linear-gradient(120deg, rgba(45,212,191,.2), rgba(45,212,191,.05)); }
+
+  /* práctica libre */
+  .libre {
+    background: rgba(9,20,32,.68);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 20px; padding: 34px 34px 28px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.35);
+  }
+  .libre h1 { margin: 0 0 8px; font-size: 24px; letter-spacing: -.02em; }
+  .libre .sub { margin: 0 0 20px; color: var(--dim); font-size: 14px; line-height: 1.55; }
+  .libre-campo {
+    width: 100%; resize: vertical; min-height: 76px;
+    padding: 14px 16px; border-radius: 12px;
+    background: #06111c; color: #d8ecff;
+    border: 1px solid #22384e; border-left: 3px solid #38bdf8;
+    font-family: 'JetBrains Mono', ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Courier New", monospace;
+    font-size: 14.5px; line-height: 1.55; tab-size: 4;
+  }
+  .libre-campo:focus { outline: none; border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,.14); }
+  .libre-panel { margin-top: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .libre-panel.vacio p { margin: 0; color: var(--dim); font-size: 13.5px; }
+  .libre-piezas {
+    display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px;
+    margin: 0; padding: 14px 16px; border-radius: 12px;
+    background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+  }
+  .libre-piezas dt { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); font-weight: 700; }
+  .libre-piezas dd {
+    margin: 0; font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+    font-size: 13px; color: #cfe4f7; word-break: break-word;
+  }
+  .libre-aviso {
+    margin: 0; padding: 10px 14px; border-radius: 10px; font-size: 13.5px;
+    color: #f4c7ce; background: rgba(253,164,175,.07); border: 1px solid rgba(253,164,175,.32);
+  }
+  .libre-cerca { padding: 16px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03); }
+  .libre-cerca > b { display: block; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+  .libre-cerca.ok { border-color: rgba(52,211,153,.4); background: rgba(52,211,153,.06); }
+  .libre-cerca.casi { border-color: rgba(252,211,77,.35); background: rgba(252,211,77,.05); }
+  .libre-cerca p { margin: 8px 0 0; font-size: 13.5px; color: #cfdcea; }
+  .libre-code {
+    margin: 0; padding: 12px 14px; border-radius: 10px; background: #06111c;
+    border: 1px solid rgba(255,255,255,.08); overflow-x: auto;
+    font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace; font-size: 13.5px; color: #d8ecff;
+  }
+  .libre-cerca .btn { margin-top: 14px; }
   .grupo.completo { border-color: rgba(52,211,153,.45); }
   .grupo.completo .g-cuenta { color: #6ee7b7; }
 
@@ -319,6 +370,7 @@
     .acciones { flex-direction: column; }
     .btn { width: 100%; }
     .grupos { grid-template-columns: 1fr; }
+    .libre { padding: 24px 18px 20px; border-radius: 18px; }
   }
 </style>
 </head>
@@ -369,8 +421,20 @@
       <span class="t-sub" id="repasar-sub"></span>
       <span class="t-flecha">→</span>
     </button>
+    <button type="button" class="todas libre-boton" id="btn-libre">
+      <span class="t-txt">Práctica libre</span>
+      <span class="t-sub">Cualquier comando, pieza por pieza</span>
+      <span class="t-flecha">→</span>
+    </button>
     <p class="sin-resultados" id="sin-resultados" hidden>Ninguna categoría coincide con la búsqueda.</p>
     <div class="grupos" id="grupos"></div>
+  </section>
+
+  <section class="libre" id="libre" hidden>
+    <h1>Práctica libre</h1>
+    <p class="sub">Escribe cualquier comando: se descompone en piezas y se compara con las sintaxis del curso.</p>
+    <textarea id="libre-texto" class="libre-campo" rows="3" spellcheck="false" placeholder="taskkill /f /im notepad.exe"></textarea>
+    <div class="libre-panel vacio" id="libre-panel"></div>
   </section>
 
   <section class="tarjeta" id="tarjeta" hidden>
@@ -791,9 +855,7 @@
 
   // ---------- comparadores ----------
 
-  function compararTexto(respuesta, esperado) {
-    var mios = preparar(respuesta);
-    var otros = preparar(esperado);
+  function compararPreparado(mios, otros) {
     if (!mios.length) {
       return { estado: 'vacio', puntaje: 0, faltan: otros, sobran: [], pistas: [] };
     }
@@ -834,6 +896,78 @@
       sobran: sobran,
       pistas: pistas
     };
+  }
+
+  function compararTexto(respuesta, esperado) {
+    return compararPreparado(preparar(respuesta), preparar(esperado));
+  }
+
+  // ---------- práctica libre ----------
+
+  // Descompone lo escrito en las piezas que entiende cmd.
+  function piezas(texto) {
+    var tokens = preparar(texto);
+    var salida = { comando: null, banderas: [], variables: [], redirecciones: [], rutas: [], texto: [] };
+
+    tokens.forEach(function (t, i) {
+      if (i === 0 && /^[a-z@]/i.test(t) && !/^[/-]/.test(t)) {
+        salida.comando = t;
+        return;
+      }
+      if (/^[/-][a-z]/i.test(t)) {
+        salida.banderas.push(t);
+        return;
+      }
+      if (/^%[a-z_][a-z0-9_]*%$/i.test(t) || /^%%[a-z]$/i.test(t) || /^![a-z_][a-z0-9_]*!$/i.test(t)) {
+        salida.variables.push(t);
+        return;
+      }
+      if (/^(2>&1|>>|>|<|\|\||&&|\||&|2>)$/.test(t)) {
+        salida.redirecciones.push(t);
+        return;
+      }
+      if (pareceArchivo(t)) {
+        salida.rutas.push(t);
+        return;
+      }
+      salida.texto.push(t);
+    });
+
+    return salida;
+  }
+
+  // Errores que cmd no avisa: el script sigue y hace otra cosa.
+  function avisos(texto) {
+    var s = limpiar(texto);
+    var fuera = [];
+    if (/\bpause\s*>\s*null\b/i.test(s)) fuera.push('El dispositivo se llama nul, con una sola l: «pause >nul».');
+    if (/\bset\s+[a-z_][a-z0-9_]*\s+=/i.test(s)) fuera.push('Los espacios alrededor del = crean otra variable: usa set "nombre=valor".');
+    if (/\bif\s+%[a-z_][a-z0-9_]*%\s*==/i.test(s)) fuera.push('Pon comillas en los dos lados: if "%variable%"=="valor".');
+    if (/\bif\s+errorlevel\s+0\b/i.test(s)) fuera.push('if errorlevel 0 siempre es verdadero: usa errorlevel 1.');
+    if (/\bcd\.\./i.test(s)) fuera.push('cd .. necesita un espacio antes de los dos puntos.');
+    if (/\belse\s*\(/i.test(s)) fuera.push('El else lleva espacio: «) else (».');
+    if (/(^|\n)\s*::/.test(s) && /\([\s\S]*\)/.test(s)) fuera.push('Dentro de un bloque usa rem, no ::.');
+    if (/\becho\b[^%\n]*\d+\s*%(?!\s*[a-z_%])/i.test(s)) fuera.push('Un % suelto intenta abrir una variable: escribe 50%% para imprimir el porcentaje.');
+    // Se neutralizan primero las %%dobles para poder ver un %suelto dentro del for.
+    var sinDobles = s.replace(/%%[a-z]/gi, '%%_');
+    if (/\bfor\b[^\n]*\s%[a-z]\b/i.test(sinDobles)) fuera.push('Dentro de un .bat la variable del for se escribe %%a.');
+    return fuera;
+  }
+
+  // La entrada del curso más parecida a lo escrito.
+  function parecido(texto, catalogo) {
+    var mios = preparar(texto);
+    var mejor = null;
+    catalogo.forEach(function (c) {
+      var otros = c.tokens || (c.tokens = preparar(c.forma));
+      var r = compararPreparado(mios, otros);
+      var coste = (r.faltan ? r.faltan.length : 0) + (r.sobran ? r.sobran.length : 0);
+      var puntaje = r.estado === 'correcto' ? 2 : r.puntaje;
+      if (!mejor || puntaje > mejor.puntaje || (puntaje === mejor.puntaje && coste < mejor.coste)) {
+        mejor = { forma: c.forma, item: c.item, resultado: r, puntaje: puntaje, coste: coste };
+      }
+    });
+    return mejor;
   }
 
   function compararAlternativas(respuesta, alternativas) {
@@ -962,6 +1096,9 @@
     compararAlternativas: compararAlternativas,
     compararRequisitos: compararRequisitos,
     compararCampos: compararCampos,
+    piezas: piezas,
+    avisos: avisos,
+    parecido: parecido,
     plan: plan,
     evaluar: evaluar
   };
@@ -1123,6 +1260,102 @@
     $('grupos').appendChild(b);
     cartas.push(b);
   });
+
+  // ---------- práctica libre ----------
+  const CATALOGO = [];
+  GRUPOS.forEach((g, gi) => {
+    g.items.forEach((it, k) => {
+      const plan = Verificador.plan(it);
+      if (plan.tipo === 'revelar' || plan.tipo === 'requisitos' || plan.tipo === 'campos') return;
+      const formas = plan.alt && plan.alt.length ? plan.alt : [it.c];
+      formas.forEach((f) => CATALOGO.push({ forma: f, item: it, gi, k }));
+    });
+  });
+
+  let libreTimer = null;
+
+  function abrirLibre() {
+    $('inicio').hidden = true;
+    $('tarjeta').hidden = true;
+    $('fin').hidden = true;
+    $('libre').hidden = false;
+    $('btn-volver').hidden = false;
+    $('cat-activa').hidden = true;
+    $('contador').textContent = 'práctica libre';
+    $('barra').style.width = '0%';
+    analizarLibre();
+    $('libre-texto').focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function abrirItem(cerca) {
+    iniciar(cerca.gi);
+    i = cerca.k;
+    pintar();
+  }
+
+  function analizarLibre() {
+    const panel = $('libre-panel');
+    const texto = $('libre-texto').value;
+    panel.replaceChildren();
+    panel.className = 'libre-panel';
+    if (!texto.trim()) {
+      panel.className = 'libre-panel vacio';
+      panel.appendChild(nodo('p', 'Escribe un comando .BAT: te digo cómo se descompone y a qué sintaxis del curso se parece.'));
+      return;
+    }
+
+    const p = Verificador.piezas(texto);
+    const avisos = Verificador.avisos(texto);
+    const cerca = Verificador.parecido(texto, CATALOGO);
+
+    const dl = document.createElement('dl');
+    dl.className = 'libre-piezas';
+    [
+      ['Comando', p.comando],
+      ['Banderas', p.banderas.join(' ')],
+      ['Variables', p.variables.join(' ')],
+      ['Redirecciones', p.redirecciones.join(' ')],
+      ['Archivos', p.rutas.join(' ')],
+      ['Texto', p.texto.join(' ')]
+    ].forEach(([k, v]) => {
+      if (!v) return;
+      dl.append(nodo('dt', k), nodo('dd', v));
+    });
+    panel.appendChild(dl);
+
+    avisos.forEach((a) => {
+      const el = nodo('p', a);
+      el.className = 'libre-aviso';
+      panel.appendChild(el);
+    });
+
+    if (!cerca) return;
+    const ok = cerca.resultado.estado === 'correcto';
+    const caja = document.createElement('div');
+    caja.className = 'libre-cerca ' + (ok ? 'ok' : 'casi');
+    caja.appendChild(nodo('b', ok ? 'Está en el curso' : 'Lo más parecido'));
+    const pre = nodo('pre', cerca.forma);
+    pre.className = 'libre-code';
+    caja.appendChild(pre);
+    if (ok) {
+      caja.appendChild(nodo('p', cerca.item.e));
+    } else {
+      if (cerca.resultado.faltan && cerca.resultado.faltan.length) {
+        caja.appendChild(nodo('p', 'Te falta: ' + cerca.resultado.faltan.join(' ')));
+      }
+      if (cerca.resultado.sobran && cerca.resultado.sobran.length) {
+        caja.appendChild(nodo('p', 'Te sobra: ' + cerca.resultado.sobran.join(' ')));
+      }
+      (cerca.resultado.pistas || []).forEach((x) => caja.appendChild(nodo('p', x)));
+    }
+    const b = nodo('button', ok ? 'Abrir esa pregunta' : 'Practicar esa sintaxis');
+    b.type = 'button';
+    b.className = 'btn';
+    b.addEventListener('click', () => abrirItem(cerca));
+    caja.appendChild(b);
+    panel.appendChild(caja);
+  }
 
   function iniciar(indice) {
     activo = indice;
@@ -1456,6 +1689,7 @@
       visibles.push({ el: $('btn-simulacro'), run: iniciarSimulacro });
       if (!$('btn-exportar').hidden) visibles.push({ el: $('btn-exportar'), run: exportar });
       if (!$('btn-repasar').hidden) visibles.push({ el: $('btn-repasar'), run: iniciarFallas });
+      visibles.push({ el: $('btn-libre'), run: abrirLibre });
     }
     let coincidencias = 0;
     cartas.forEach((el, idx) => {
@@ -1493,6 +1727,7 @@
     $('inicio').hidden = false;
     $('tarjeta').hidden = true;
     $('fin').hidden = true;
+    $('libre').hidden = true;
     $('btn-volver').hidden = true;
     $('cat-activa').hidden = true;
     $('contador').textContent = GRUPOS.length + ' categorías';
@@ -1511,6 +1746,11 @@
   $('btn-elegir').addEventListener('click', irAInicio);
   $('btn-repetir').addEventListener('click', repetir);
   $('btn-simulacro').addEventListener('click', iniciarSimulacro);
+  $('btn-libre').addEventListener('click', abrirLibre);
+  $('libre-texto').addEventListener('input', () => {
+    clearTimeout(libreTimer);
+    libreTimer = setTimeout(analizarLibre, 180);
+  });
   $('btn-exportar').addEventListener('click', exportar);
   $('q').addEventListener('input', filtrar);
   $('btn-repasar').addEventListener('click', iniciarFallas);
@@ -1538,6 +1778,15 @@
     const enInicio = !$('inicio').hidden;
     const enQuiz = !$('tarjeta').hidden;
     const enFin = !$('fin').hidden;
+    const enLibre = !$('libre').hidden;
+
+    if (enLibre) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        irAInicio();
+      }
+      return;
+    }
 
     if (enInicio) {
       if (e.key === '/') {

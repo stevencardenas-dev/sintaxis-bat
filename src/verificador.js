@@ -369,9 +369,7 @@
 
   // ---------- comparadores ----------
 
-  function compararTexto(respuesta, esperado) {
-    var mios = preparar(respuesta);
-    var otros = preparar(esperado);
+  function compararPreparado(mios, otros) {
     if (!mios.length) {
       return { estado: 'vacio', puntaje: 0, faltan: otros, sobran: [], pistas: [] };
     }
@@ -412,6 +410,78 @@
       sobran: sobran,
       pistas: pistas
     };
+  }
+
+  function compararTexto(respuesta, esperado) {
+    return compararPreparado(preparar(respuesta), preparar(esperado));
+  }
+
+  // ---------- práctica libre ----------
+
+  // Descompone lo escrito en las piezas que entiende cmd.
+  function piezas(texto) {
+    var tokens = preparar(texto);
+    var salida = { comando: null, banderas: [], variables: [], redirecciones: [], rutas: [], texto: [] };
+
+    tokens.forEach(function (t, i) {
+      if (i === 0 && /^[a-z@]/i.test(t) && !/^[/-]/.test(t)) {
+        salida.comando = t;
+        return;
+      }
+      if (/^[/-][a-z]/i.test(t)) {
+        salida.banderas.push(t);
+        return;
+      }
+      if (/^%[a-z_][a-z0-9_]*%$/i.test(t) || /^%%[a-z]$/i.test(t) || /^![a-z_][a-z0-9_]*!$/i.test(t)) {
+        salida.variables.push(t);
+        return;
+      }
+      if (/^(2>&1|>>|>|<|\|\||&&|\||&|2>)$/.test(t)) {
+        salida.redirecciones.push(t);
+        return;
+      }
+      if (pareceArchivo(t)) {
+        salida.rutas.push(t);
+        return;
+      }
+      salida.texto.push(t);
+    });
+
+    return salida;
+  }
+
+  // Errores que cmd no avisa: el script sigue y hace otra cosa.
+  function avisos(texto) {
+    var s = limpiar(texto);
+    var fuera = [];
+    if (/\bpause\s*>\s*null\b/i.test(s)) fuera.push('El dispositivo se llama nul, con una sola l: «pause >nul».');
+    if (/\bset\s+[a-z_][a-z0-9_]*\s+=/i.test(s)) fuera.push('Los espacios alrededor del = crean otra variable: usa set "nombre=valor".');
+    if (/\bif\s+%[a-z_][a-z0-9_]*%\s*==/i.test(s)) fuera.push('Pon comillas en los dos lados: if "%variable%"=="valor".');
+    if (/\bif\s+errorlevel\s+0\b/i.test(s)) fuera.push('if errorlevel 0 siempre es verdadero: usa errorlevel 1.');
+    if (/\bcd\.\./i.test(s)) fuera.push('cd .. necesita un espacio antes de los dos puntos.');
+    if (/\belse\s*\(/i.test(s)) fuera.push('El else lleva espacio: «) else (».');
+    if (/(^|\n)\s*::/.test(s) && /\([\s\S]*\)/.test(s)) fuera.push('Dentro de un bloque usa rem, no ::.');
+    if (/\becho\b[^%\n]*\d+\s*%(?!\s*[a-z_%])/i.test(s)) fuera.push('Un % suelto intenta abrir una variable: escribe 50%% para imprimir el porcentaje.');
+    // Se neutralizan primero las %%dobles para poder ver un %suelto dentro del for.
+    var sinDobles = s.replace(/%%[a-z]/gi, '%%_');
+    if (/\bfor\b[^\n]*\s%[a-z]\b/i.test(sinDobles)) fuera.push('Dentro de un .bat la variable del for se escribe %%a.');
+    return fuera;
+  }
+
+  // La entrada del curso más parecida a lo escrito.
+  function parecido(texto, catalogo) {
+    var mios = preparar(texto);
+    var mejor = null;
+    catalogo.forEach(function (c) {
+      var otros = c.tokens || (c.tokens = preparar(c.forma));
+      var r = compararPreparado(mios, otros);
+      var coste = (r.faltan ? r.faltan.length : 0) + (r.sobran ? r.sobran.length : 0);
+      var puntaje = r.estado === 'correcto' ? 2 : r.puntaje;
+      if (!mejor || puntaje > mejor.puntaje || (puntaje === mejor.puntaje && coste < mejor.coste)) {
+        mejor = { forma: c.forma, item: c.item, resultado: r, puntaje: puntaje, coste: coste };
+      }
+    });
+    return mejor;
   }
 
   function compararAlternativas(respuesta, alternativas) {
@@ -540,6 +610,9 @@
     compararAlternativas: compararAlternativas,
     compararRequisitos: compararRequisitos,
     compararCampos: compararCampos,
+    piezas: piezas,
+    avisos: avisos,
+    parecido: parecido,
     plan: plan,
     evaluar: evaluar
   };

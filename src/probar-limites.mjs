@@ -110,6 +110,57 @@ si('variables del for confundidas entre sí', () => {
   noCorrecto('for /f "tokens=1,2" %%a in (d.csv) do echo %%a - %%a', esperado);
 });
 
+// ---------- práctica libre ----------
+si('descompone las piezas de un comando', () => {
+  const p = V.piezas('taskkill /f /im "notepad.exe"');
+  assert.equal(p.comando, 'taskkill');
+  assert.deepEqual(p.banderas, ['/f', '/im']);
+  assert.deepEqual(p.rutas, ['"notepad.exe"']);
+
+  const q = V.piezas('echo Hola %USERNAME% > "%USERPROFILE%\\log.txt"');
+  assert.equal(q.comando, 'echo');
+  assert.ok(q.variables.includes('%username%'));
+  assert.ok(q.redirecciones.includes('>'));
+});
+
+si('avisa de los errores que cmd no señala', () => {
+  const casos = [
+    ['pause > null', 'nul'],
+    ['echo Progreso: 50%', '50%%'],
+    ['set origen = C:\\datos', 'set "nombre=valor"'],
+    ['if %opcion%==1 echo hola', 'comillas'],
+    ['if errorlevel 0 echo hola', 'siempre es verdadero'],
+    ['cd..', 'espacio'],
+    ['for %%a in (1) do echo %a', '%%a']
+  ];
+  casos.forEach(([texto, espera]) => {
+    const lista = V.avisos(texto);
+    assert.ok(
+      lista.some((a) => a.toLowerCase().includes(espera.toLowerCase())),
+      'no avisó de: ' + texto + ' -> ' + JSON.stringify(lista)
+    );
+  });
+});
+
+si('no avisa cuando el comando está bien', () => {
+  ['pause >nul', 'set "origen=C:\\datos"', 'if "%opcion%"=="1" echo hola', 'echo Progreso: 50%%', 'for %%a in (1) do echo %%a', 'cd ..'].forEach((texto) => {
+    assert.deepEqual(V.avisos(texto), [], 'avisó de más: ' + texto);
+  });
+});
+
+si('encuentra la entrada más parecida del curso', () => {
+  const catalogo = [
+    { forma: 'taskkill /f /im notepad.exe', item: { id: 'a' } },
+    { forma: 'ping -n 4 google.com', item: { id: 'b' } }
+  ];
+  const cerca = V.parecido('taskkil /f /im notepad.exe', catalogo);
+  assert.equal(cerca.forma, 'taskkill /f /im notepad.exe');
+  assert.ok(cerca.resultado.pistas.some((p) => p.indexOf('taskkill') !== -1));
+
+  const otro = V.parecido('ping -n 4 google.com', catalogo);
+  assert.equal(otro.resultado.estado, 'correcto');
+});
+
 // ---------- interfaz ----------
 si('los requisitos no se confunden con una línea', () => {
   const item = { c: 'x', r: { requisitos: [{ texto: 'a', re: 'a' }] } };
