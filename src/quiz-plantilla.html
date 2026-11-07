@@ -456,6 +456,7 @@ __FUENTES__
       <div class="resp" id="resp" hidden>
         <span class="rotulo">Sintaxis</span>
         <pre class="codigo" id="codigo"></pre>
+        <p class="ayuda" id="esquema" hidden>Esquema: los «...» son partes que cambian según el script; no se escriben literalmente.</p>
         <div class="pistas">
           <span class="chip" id="cat"></span>
           <span class="ver" id="ver"></span>
@@ -792,6 +793,7 @@ __VERIFICADOR__
     $('resp').hidden = true;
     pintarEntrada(q);
     $('codigo').textContent = q.c;
+    $('esquema').hidden = !/(^|\s)\.\.\.($|\s)|→/.test(q.c);
     $('cat').textContent = q.sec;
     $('ver').innerHTML = '';
     const etiqueta = q.b === 'trampa' ? 'Corrección' : 'Dónde verlo';

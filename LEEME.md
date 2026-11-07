@@ -10,21 +10,19 @@ Versión publicada: <https://stevencardenas-dev.github.io/sintaxis-bat/>
 
 | Archivo | Qué es |
 |---|---|
-| `Guia-Sintaxis-BAT.pdf` | Guía de 50 páginas con 251 sintaxis explicadas en 26 categorías (A4, lista para imprimir). |
 | `Quiz-Sintaxis-BAT.html` | Cuestionario interactivo de 250 preguntas en 25 categorías, con previo, simulacro, práctica libre y progreso guardado. |
-| `src/` | El código que genera ambos entregables a partir de una sola fuente de datos. |
+| `src/` | La fuente de datos y el código que genera el cuestionario. |
+| `src/generar.mjs` | Generador opcional de la guía PDF para imprimir; el PDF no se versiona. |
 
-Las dos entregas son autónomas:
+El cuestionario es autónomo:
 
-- El **PDF** lleva las fuentes incrustadas, así que se ve igual en cualquier lector y en
-  cualquier sistema operativo.
 - El **HTML** lleva dentro los datos de las 250 preguntas y las fuentes (Inter y
   JetBrains Mono) codificadas en base64. Es un archivo único: se puede abrir con doble
   clic, sin servidor y sin conexión; también se puede enviar por correo o USB tal cual.
 
-La guía incluye una variante duplicada de una consulta que el cuestionario omite a
-propósito (`soloGuia`), por eso las cifras difieren en uno. La categoría «Chuletas de
-referencia rápida» solo tiene tablas y no genera preguntas.
+El banco tiene 251 entradas; una variante duplicada se marca `soloGuia` y el
+cuestionario la omite, por eso publica 250. La categoría «Chuletas de referencia
+rápida» solo tiene tablas y no genera preguntas.
 
 ## Cómo usarlo
 
@@ -89,12 +87,13 @@ Google Chrome instalado.
 npm install --no-audit --no-fund
 npm run verificar        # motor + casos límite, sin navegador
 npm run quiz             # escribe Quiz-Sintaxis-BAT.html
-npm run pdf              # escribe Guia-Sintaxis-BAT.pdf
+npm run pdf              # guía PDF opcional para imprimir (no se versiona)
 npm run empaquetar       # empaqueta todo en Sintaxis-BAT.zip
 ```
 
 `generar.mjs` usa `puppeteer-core` con el Chrome ya instalado en el equipo; si Chrome
-está en otra ruta, se ajusta la constante `executablePath` al inicio del archivo.
+está en otra ruta, se ajusta la constante `executablePath` al inicio del archivo. El PDF
+resultante se genera solo cuando se necesita imprimir y no se guarda en el repositorio.
 
 El flujo de GitHub Actions (`.github/workflows/verificar.yml`) corre `npm run verificar`
 y comprueba que el `Quiz-Sintaxis-BAT.html` commiteado coincide con la plantilla. El PDF

@@ -371,7 +371,7 @@ export const apendices = [
         b: 'base'
       },
       {
-        c: 'powercfg -attributes 2a737441-... 48352abd-... -ATTRIB_HIDE',
+        c: 'powercfg -attributes 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 -ATTRIB_HIDE',
         e: 'Muestra u oculta una opción avanzada de energía que el panel no expone, cambiando sus atributos con los GUID de subgrupo y de opción. Antes se hacía a mano en REGEDIT (valor 2 en ATRIBUTES).',
         d: 'taller baterías 1',
         b: 'peligro'
