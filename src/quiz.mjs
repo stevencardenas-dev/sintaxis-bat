@@ -18,9 +18,10 @@ const grupos = todas
     sec: s.titulo,
     id: s.id,
     color: s.color,
-    items: s.items.map((it) => {
+    items: s.items.map((it, idx) => {
       const regla = reglas[it.c] || (it.cod ? reglas[it.cod] : null);
-      const item = { c: it.c, e: it.e, d: it.d, b: it.b || 'base' };
+      // Id estable: el progreso guardado no depende del texto de la respuesta.
+      const item = { id: s.id + '-' + (idx + 1), c: it.c, e: it.e, d: it.d, b: it.b || 'base' };
       if (regla) item.r = regla;
 
       // Las familias separadas por «·» son alternativas: cualquiera vale.
