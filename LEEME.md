@@ -4,6 +4,8 @@ Material de estudio sobre la sintaxis de los archivos por lotes (`.bat`) de Wind
 organizado en categorías. No necesita internet, instalación ni programas adicionales
 para usarse.
 
+Versión publicada: <https://stevencardenas-dev.github.io/sintaxis-bat/>
+
 ## Qué hay aquí
 
 | Archivo | Qué es |
